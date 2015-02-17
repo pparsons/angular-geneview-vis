@@ -1,0 +1,34 @@
+
+#angular-geneview-app {
+    border: 1px solid #708090;
+}
+
+#angular-geneview-app text {
+    font: 11px sans-serif;
+}
+
+#angular-geneview-app .geneview-scale path,
+#angular-geneview-app .geneview-scale line {
+    stroke: #d4d4d4;
+    fill: none;
+    shape-rendering: crispEdges;
+}
+
+#angular-geneview-app .geneview-statusbar {
+    fill: #d4d4d4;
+}
+
+.acen-text, .gpos50-text,.gpos66-text, .gpos75-text, .gpos100-text {
+    fill: #ededed;
+}
+
+#angular-geneview-app .gene {
+    fill: #ffb006;
+
+}
+
+#angular-geneview-app .gene:hover
+{
+    opacity: 0.6;
+    cursor: pointer;
+}

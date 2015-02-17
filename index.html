@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html ng-app="angularGeneviewVis">
+<head>
+	<title>geneview-vis demo page</title>
+	
+	<link rel="stylesheet" href="bower_components/angular-chromosome-vis/angular-chromosome-vis.css" />
+    <link rel="stylesheet" href="src/angular-geneview-vis.css" />
+</head>
+
+
+<body ng-controller="MainCtrl">
+
+	<div chromosome chr="13" rel-size="false" axis="true" assembly="37" width='1280' height="20" mode="single"></div>
+
+    <div geneview chr="13" start="27131838" stop="27393082" height="150" width="1280"></div>
+
+	<!-- JS Script Dependencies -->
+	<script src="bower_components/angular/angular.min.js"></script>
+	<script src="bower_components/d3/d3.min.js"></script>
+	<script src="bower_components/underscore/underscore-min.js"></script>
+
+	<script src="bower_components/angular-chromosome-vis/angular-chromosome-vis.js"></script>
+	<script src="bower_components/jsdas/jsdas.min.js"></script>
+
+	<script src="src/angular-geneview-vis.js"></script>
+
+</body>
+</html>
