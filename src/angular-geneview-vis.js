@@ -10,7 +10,7 @@
 
     angularGeneviewVis.factory('geneLoader', ['$http', '$rootScope', function($http, $rootScope) {
 
-        //hard code for dev
+        //hard code
         $rootScope.server = 'http://localhost:9090';
 
         var serverScriptAddr = $rootScope.server + '/api/getgenes.php?';
@@ -28,9 +28,91 @@
         };
     }]);
 
-    angularGeneviewVis.directive('geneview', ['geneLoader', function(geneLoader){
+
+    angularGeneviewVis.directive('geneview', ['geneLoader', function(geneLoader) {
+
+        /**
+         * Manage gene data response
+         *  - Calculate track to display display location
+         * @constructor
+         */
+        var GeneManager = function() {
+            var self = this;
+
+            /**
+             * 2D array to hold current genes
+             * genDB[i] = ith track
+             * geneDB[j] = jth gene on track i
+             * @type {Array}
+             */
+            var geneDB = [];
+
+            //Get the next available track to display the gene without overlapping others
+            function findFreeTrack(start, stop) {
+                var trackNo = 0;
+                for (var i = 0; i < geneDB.length; i++ ) {
+                    for(var j = 0; j < geneDB[i].length; j++) {
+                        var gene = geneDB[i][j];
+                        if (gene.stop >= start && gene.start <= stop) {
+                            trackNo ++;
+                            break;
+                        }else {
+                            return trackNo;
+                        }
+                    }
+                }
+                return trackNo;
+            }
+
+            // Register a gene location
+            // Return its available track to display
+            self.register = function(gene) {
+                var trackNo = findFreeTrack(gene.start, gene.stop);
+
+                if(typeof geneDB[trackNo] === 'undefined') {
+                    geneDB[trackNo] = [];
+                }
+                geneDB[trackNo].push(gene);
+
+                return trackNo;
+            };
+
+            // Process a data set
+            // Call handler with sanitized, wrapped data
+            self.process = function(data, handler) {
+                var sanData = [];
+
+                function isBadVar(res) {
+                    return ((res == null) || (typeof res === 'undefined') || (res == ''));
+                }
+
+                for(var i = data.length -1; i >= 0; i--) {
+                    if(isBadVar(data[i].start) || isBadVar(data[i].end)) {
+                        //data.splice(i, 1);
+                        continue;
+                    }
+
+                    if (parseInt(data[i].end) < parseInt(data[i].start)) {
+                        var ts = data[i].start;
+                        data[i].start = data[i].end;
+                        data[i].end = ts;
+                    }
+
+                    var nModel = {};
+                    nModel.gene = data[i];
+                    nModel.track = self.register({
+                        start:+data[i].start,
+                        stop:+data[i].end
+                    });
+                    sanData.push(nModel);
+                }
+
+                handler(sanData);
+            }
+        }
 
         function link(scope, element, attr) {
+
             var appID = '#angular-geneview-app';
             var target, xscale, statusText;
 
@@ -39,7 +121,7 @@
                 GENES_YSHIFT = SD_1COL_HEIGHT + 2;
 
 
-            function drawScale(){
+            function drawScale() {
 
                 var zmAxis = d3.svg.axis()
                     .tickFormat(d3.format('s'))
@@ -85,18 +167,16 @@
                     .text(bandID);
             }
 
-            scope.link = function () {
-                target = d3.select(appID)
-                    .style('width', scope.width+'px')
-                    .style('height', scope.height+'px')
-                    .append('svg')
-                    .attr('height', scope.height);
 
-                target.attr({width: scope.width});
-                drawStatusBar(scope.height, scope.width);
-                //hardcode for dev
-                drawBand("q14.11", "gpos66");
-            }();
+            target = d3.select(appID)
+                .style('width', scope.width+'px')
+                .style('height', scope.height+'px')
+                .append('svg')
+                .attr('height', scope.height);
+
+            target.attr({width: scope.width});
+            drawStatusBar(scope.height, scope.width);
+            drawBand("q14.11", "gpos66");
 
             statusText.text('Requesting: ' + scope.chr +' : ' + scope.start + " : " + scope.stop);
             geneLoader.getGenes(scope.chr, scope.start, scope.stop, function(data){
@@ -107,65 +187,45 @@
                         return ((res == null) || (typeof res === 'undefined') || (res == ''));
                     }
 
-                    console.log(data);
+                    new GeneManager().process(data, function(res) {
+                        console.log(res);
+                        var maxBP = d3.max(res, function(d){ return +d.gene.end;});
+                        var minBP = d3.min(res, function(d){return +d.gene.start});
 
-                    for(var i = data.length -1; i >= 0; i--) {
-                        if(isBadVar(data[i].start) || isBadVar(data[i].end)) {
-                            console.log(data[i].symbol + " removed");
-                            data.splice(i, 1);
-                        }
+                        var SENSITIVITY_PADDING = (maxBP - minBP) * 0.025;
+                        xscale = d3.scale.linear()
+                            .range([0, +scope.width])
+                            .domain([minBP - SENSITIVITY_PADDING, maxBP + SENSITIVITY_PADDING]);
 
-                    }
+                        drawScale();
 
-                    for(var i = data.length -1; i >= 0; i--) {
+                        var genes = target.append('g')
+                            .attr('transform', 'translate(0,' + SD_1COL_HEIGHT * 3+ ")");
 
-                        if (parseInt(data[i].end) < parseInt(data[i].start)) {
-                            var ts = data[i].start;
-                            data[i].start = data[i].end;
-                            data[i].end = ts;
-                        }
-                    }
+                        var gene = genes.selectAll('g')
+                            .data(res).enter().append('g');
 
-
-                    console.log(data);
-
-                    var maxBP = d3.max(data, function(d){ return +d.end;});
-                    var minBP = d3.min(data, function(d){return +d.start});
-
-                    var SENSITIVITY_PADDING = (maxBP - minBP) * 0.025;
-                    xscale = d3.scale.linear()
-                        .range([0, +scope.width])
-                        .domain([minBP - SENSITIVITY_PADDING, maxBP + SENSITIVITY_PADDING]);
-
-                    drawScale();
-
-                    console.log(minBP + ' ' + maxBP);
-
-                    var genes = target.append('g')
-                        .attr('transform', 'translate(0,' + SD_1COL_HEIGHT * 3+ ")");
-
-                    var gene = genes.selectAll('g')
-                        .data(data).enter().append('g');
+                        gene.append('rect')
+                            .classed('gene', true)
+                            .attr('x', function(d) {
+                                return d3.min([xscale(+d.gene.start), xscale(+d.gene.end)]);
+                            })
+                            .attr('width', function(d) {
+                                var a = xscale(+d.gene.start) - xscale(+d.gene.end);
+                                var b = xscale(+d.gene.end) - xscale(+d.gene.start);
+                                return Math.ceil(d3.max([a,b]));
+                            })
+                            .attr('height', SD_1COL_HEIGHT / 2)
+                            .attr('y', function(d) {
+                                var t = (+d.track +1) * (SD_1COL_HEIGHT);
+                                console.log(t);
+                                return (+d.track +1) * (SD_1COL_HEIGHT);
+                            });
 
 
-                    gene.append('rect')
-                        .classed('gene', true)
-                        .attr('x', function(d){
-                            return d3.min([xscale(+d.start), xscale(+d.end)]);
-                        })
-                        .attr('width', function(d){
-                            var a = xscale(+d.start) - xscale(+d.end);
-                            var b = xscale(+d.end) - xscale(+d.start);
+                        gene.append('title').text(function(d){return d.gene.symbol});
 
-                            var w = d3.max([a, b]);
-
-                            if (w < 1) w = 1;
-                            return w;
-                        })
-                        .attr('height', SD_1COL_HEIGHT);
-
-                    gene.append('title').text(function(d){return d.symbol});
-
+                    });
 
                 } else {
                     statusText.text(data.err);
@@ -188,6 +248,4 @@
 
         };
     }]);
-
-
 }());
