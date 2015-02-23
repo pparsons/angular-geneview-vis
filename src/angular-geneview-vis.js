@@ -182,8 +182,18 @@
             statusText.text('Requesting: ' + scope.chr +' : ' + scope.start + " : " + scope.stop);
             drawBand("q14.11", "gpos66");
 
+            var geneTip = d3.tip()
+                .attr('class', 'd3-tip')
+                .direction('s')
+                .offset([8,0])
+                .html(function(d) {
+                    var tiptemp = '<span style=\"color:red\">' + d.gene.symbol + "</span>: " + d.gene.desc;
+                    return tiptemp;
+                });
 
-            geneLoader.getGenes(scope.chr, scope.start, scope.stop, function(data){
+            target.call(geneTip);
+
+            geneLoader.getGenes(scope.chr, scope.start, scope.stop, function(data) {
 
                 if (typeof data.err ==='undefined') {
                     statusText.text('Done');
@@ -204,10 +214,9 @@
 
                     drawScale();
 
-                    var genes = target.append('g')
-                        .attr('transform', 'translate(0,' + GENES_YSHIFT +")");
-
-                    var gene = genes.selectAll('g')
+                    var gene = target.append('g')
+                        .attr('transform', 'translate(0,' + GENES_YSHIFT +")")
+                        .selectAll('g')
                         .data(geneDataSet).enter().append('g');
 
                     gene.append('rect')
@@ -229,8 +238,10 @@
                             return (+d.track +1) * (SD_1COL_HEIGHT);
                         });
 
-
                     gene.append('title').text(function(d){return d.gene.symbol});
+
+                    gene.on('mouseover', geneTip.show)
+                        .on('mouseout', geneTip.hide)
 
                 } else {
                     statusText.text(data.err);
