@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html ng-app="angularGeneviewVis">
+<html ng-app="demoApp">
 <head>
 	<title>geneview-vis demo page</title>
 	
@@ -8,22 +8,29 @@
 </head>
 
 
-<body ng-controller="MainCtrl">
+<body ng-controller="mainCtrl">
+	<div chromosome chr="13" rel-size="false" axis="true" assembly="37" width='900' height="20" mode="single" centromere="dot"></div>
 
-	<div chromosome chr="13" rel-size="false" axis="true" assembly="37" width='1500' height="20" mode="single" centromere="dot">
-        {{height}}</div>
-
-    <div geneview chr="13" start="27161838" stop="29393082" height="180" width="1500"></div>
+    <div geneview chr="13" start="29161838" stop="30393082" height="90" width="900"></div>
 
 	<!-- JS Script Dependencies -->
 	<script src="bower_components/angular/angular.min.js"></script>
 	<script src="bower_components/d3/d3.min.js"></script>
 	<script src="bower_components/underscore/underscore-min.js"></script>
-
 	<script src="bower_components/angular-chromosome-vis/angular-chromosome-vis.js"></script>
 	<script src="bower_components/jsdas/jsdas.min.js"></script>
-
 	<script src="src/angular-geneview-vis.js"></script>
 
+    <script>
+
+        var demoApp = angular.module('demoApp', ['angularChromosomeVis', 'angularGeneviewVis']);
+
+        demoApp.controller('mainCtrl', ['$scope', function($scope) {
+            $scope.selectedBands = {"a":"123"}
+
+        }]);
+
+
+    </script>
 </body>
 </html>

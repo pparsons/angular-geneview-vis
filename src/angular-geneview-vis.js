@@ -2,11 +2,7 @@
 
 (function(){
 
-	var angularGeneviewVis = angular.module('angularGeneviewVis', ["angularChromosomeVis"]);
-
-    angularGeneviewVis.controller('MainCtrl', ['$scope', function (sc) {
-
-	}]);
+	var angularGeneviewVis = angular.module('angularGeneviewVis', []);
 
     angularGeneviewVis.factory('geneLoader', ['$http', '$rootScope', function($http, $rootScope) {
 
@@ -21,13 +17,13 @@
                     cb(data);
 
                 }).error(function(data, status, headers, config){
+
                     //handle error here
                     cb({err:"Failed to load genes. Connection failed."});
                 });
             }
         };
     }]);
-
 
     angularGeneviewVis.directive('geneview', ['geneLoader', function(geneLoader) {
 
@@ -36,90 +32,97 @@
          *  - Calculate track to display display location
          * @constructor
          */
-        var GeneManager = function() {
-            var self = this;
+        var GeneManager = (function() {
+            var gm = function() {
+                var self = this;
 
-            /**
-             * 2D array to hold current genes
-             * genDB[i] = ith track
-             * geneDB[j] = jth gene on track i
-             * @type {Array}
-             */
-            var geneDB = [];
+                /**
+                 * 2D array to hold current genes
+                 * genDB[i] = ith track
+                 * geneDB[i][j] = jth gene on track i
+                 * @type {Array}
+                 */
+                var geneDB = [];
 
-            //Get the next available track to display the gene without overlapping others
-            function findFreeTrack(start, stop) {
-                var trackNo = 0;
-                for (var i = 0; i < geneDB.length; i++ ) {
-                    for(var j = 0; j < geneDB[i].length; j++) {
-                        var gene = geneDB[i][j];
-                        if (gene.stop >= start && gene.start <= stop) {
-                            trackNo ++;
-                            break;
-                        }else {
-                            return trackNo;
+                //Get the next available track to display the gene without overlapping others
+                function findFreeTrack(start, stop) {
+                    var trackNo = 0;
+                    for (var i = 0; i < geneDB.length; i++ ) {
+                        for(var j = 0; j < geneDB[i].length; j++) {
+                            var gene = geneDB[i][j];
+                            if (gene.stop >= start && gene.start <= stop) {
+                                trackNo ++;
+                                break;
+                            }else {
+                                return trackNo;
+                            }
                         }
                     }
-                }
-                return trackNo;
-            }
-
-            // Register a gene location
-            // Return its available track to display
-            self.register = function(gene) {
-                var trackNo = findFreeTrack(gene.start, gene.stop);
-
-                if(typeof geneDB[trackNo] === 'undefined') {
-                    geneDB[trackNo] = [];
-                }
-                geneDB[trackNo].push(gene);
-
-                return trackNo;
-            };
-
-            // Process a data set
-            // Call handler with sanitized, wrapped data
-            self.process = function(data, handler) {
-                var sanData = [];
-
-                function isBadVar(res) {
-                    return ((res == null) || (typeof res === 'undefined') || (res == ''));
+                    return trackNo;
                 }
 
-                for(var i = data.length -1; i >= 0; i--) {
-                    if(isBadVar(data[i].start) || isBadVar(data[i].end)) {
-                        //data.splice(i, 1);
-                        continue;
+                // Register a gene location
+                // Return its available track to display
+                self.register = function(gene) {
+                    var trackNo = findFreeTrack(gene.start, gene.stop);
+
+                    if(typeof geneDB[trackNo] === 'undefined') {
+                        geneDB[trackNo] = [];
+                    }
+                    geneDB[trackNo].push(gene);
+
+                    return trackNo;
+                };
+
+                // Process a data set
+                // Return sanitized, wrapped data
+                self.process = function(data, handler) {
+                    var sanData = [];
+
+                    function isBadVar(res) {
+                        return ((res == null) || (typeof res === 'undefined') || (res == ''));
                     }
 
-                    if (parseInt(data[i].end) < parseInt(data[i].start)) {
-                        var ts = data[i].start;
-                        data[i].start = data[i].end;
-                        data[i].end = ts;
+                    for(var i = data.length -1; i >= 0; i--) {
+                        if(isBadVar(data[i].start) || isBadVar(data[i].end)) {
+                            //data.splice(i, 1);
+                            continue;
+                        }
+
+                        if (parseInt(data[i].end) < parseInt(data[i].start)) {
+                            var ts = data[i].start;
+                            data[i].start = data[i].end;
+                            data[i].end = ts;
+                        }
+
+                        var nModel = {};
+                        nModel.gene = data[i];
+                        nModel.track = self.register({
+                            start:+data[i].start,
+                            stop:+data[i].end
+                        });
+                        sanData.push(nModel);
                     }
 
-                    var nModel = {};
-                    nModel.gene = data[i];
-                    nModel.track = self.register({
-                        start:+data[i].start,
-                        stop:+data[i].end
-                    });
-                    sanData.push(nModel);
+                    return sanData;
                 }
-
-                handler(sanData);
             }
-        }
+
+            return gm;
+        }());
 
         function link(scope, element, attr) {
 
-            var appID = '#angular-geneview-app';
+            /**
+             * Directive variables, drawing functions
+             *
+             */
+            var appID = 'angular-geneview-app';
             var target, xscale, statusText;
 
             var SD_1COL_HEIGHT = 20,
                 STATUS_TEXT_YSHIFT = 15,
-                GENES_YSHIFT = SD_1COL_HEIGHT + 2;
-
+                GENES_YSHIFT = 34;
 
             function drawScale() {
 
@@ -167,8 +170,8 @@
                     .text(bandID);
             }
 
-
-            target = d3.select(appID)
+            target = d3.select(element[0]).append("div")
+                .classed(appID, true)
                 .style('width', scope.width+'px')
                 .style('height', scope.height+'px')
                 .append('svg')
@@ -176,56 +179,58 @@
 
             target.attr({width: scope.width});
             drawStatusBar(scope.height, scope.width);
+            statusText.text('Requesting: ' + scope.chr +' : ' + scope.start + " : " + scope.stop);
             drawBand("q14.11", "gpos66");
 
-            statusText.text('Requesting: ' + scope.chr +' : ' + scope.start + " : " + scope.stop);
-            geneLoader.getGenes(scope.chr, scope.start, scope.stop, function(data){
-                statusText.text('Done');
-                if (typeof data.err ==='undefined') {
 
+            geneLoader.getGenes(scope.chr, scope.start, scope.stop, function(data){
+
+                if (typeof data.err ==='undefined') {
+                    statusText.text('Done');
                     function isBadVar(res) {
                         return ((res == null) || (typeof res === 'undefined') || (res == ''));
                     }
 
-                    new GeneManager().process(data, function(res) {
-                        console.log(res);
-                        var maxBP = d3.max(res, function(d){ return +d.gene.end;});
-                        var minBP = d3.min(res, function(d){return +d.gene.start});
 
-                        var SENSITIVITY_PADDING = (maxBP - minBP) * 0.025;
-                        xscale = d3.scale.linear()
-                            .range([0, +scope.width])
-                            .domain([minBP - SENSITIVITY_PADDING, maxBP + SENSITIVITY_PADDING]);
+                    var geneDataSet = new GeneManager().process(data);
+                    console.log(geneDataSet);
+                    var maxBP = d3.max(geneDataSet, function(d){ return +d.gene.end;});
+                    var minBP = d3.min(geneDataSet, function(d){return +d.gene.start});
 
-                        drawScale();
+                    var SENSITIVITY_PADDING = (maxBP - minBP) * 0.025;
+                    xscale = d3.scale.linear()
+                        .range([0, +scope.width])
+                        .domain([minBP - SENSITIVITY_PADDING, maxBP + SENSITIVITY_PADDING]);
 
-                        var genes = target.append('g')
-                            .attr('transform', 'translate(0,' + SD_1COL_HEIGHT * 3+ ")");
+                    drawScale();
 
-                        var gene = genes.selectAll('g')
-                            .data(res).enter().append('g');
+                    var genes = target.append('g')
+                        .attr('transform', 'translate(0,' + GENES_YSHIFT +")");
 
-                        gene.append('rect')
-                            .classed('gene', true)
-                            .attr('x', function(d) {
-                                return d3.min([xscale(+d.gene.start), xscale(+d.gene.end)]);
-                            })
-                            .attr('width', function(d) {
-                                var a = xscale(+d.gene.start) - xscale(+d.gene.end);
-                                var b = xscale(+d.gene.end) - xscale(+d.gene.start);
-                                return Math.ceil(d3.max([a,b]));
-                            })
-                            .attr('height', SD_1COL_HEIGHT / 2)
-                            .attr('y', function(d) {
-                                var t = (+d.track +1) * (SD_1COL_HEIGHT);
-                                console.log(t);
-                                return (+d.track +1) * (SD_1COL_HEIGHT);
-                            });
+                    var gene = genes.selectAll('g')
+                        .data(geneDataSet).enter().append('g');
+
+                    gene.append('rect')
+                        .classed('gene', true)
+                        .attr('x', function(d) {
+                            return d3.min([xscale(+d.gene.start), xscale(+d.gene.end)]);
+                        })
+                        .attr('width', function(d) {
+                            var a = xscale(+d.gene.start) - xscale(+d.gene.end);
+                            var b = xscale(+d.gene.end) - xscale(+d.gene.start);
+
+                            var w = d3.max([a,b]);
+                            return w < 1 ? 2: w;
+                        })
+                        .attr('height', SD_1COL_HEIGHT / 2)
+                        .attr('y', function(d) {
+                            var t = (+d.track +1) * (SD_1COL_HEIGHT);
+                            console.log(t);
+                            return (+d.track +1) * (SD_1COL_HEIGHT);
+                        });
 
 
-                        gene.append('title').text(function(d){return d.gene.symbol});
-
-                    });
+                    gene.append('title').text(function(d){return d.gene.symbol});
 
                 } else {
                     statusText.text(data.err);
@@ -240,11 +245,11 @@
             scope: {
                 chr : '@',
                 start: '@',
+                selectedBands: '=',
                 stop: '@',
                 height: '@',
                 width:'@'
-            },
-            templateUrl: "src/geneview-template.html"
+            }
 
         };
     }]);
