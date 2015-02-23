@@ -112,6 +112,11 @@
         }());
 
         function link(scope, element, attr) {
+            console.log(scope);
+
+            scope.$watch('start', function(newVal, oldVal) {
+                console.log("start:"+newVal);
+            });
 
             /**
              * Directive variables, drawing functions
@@ -142,17 +147,26 @@
             }
 
             function drawStatusBar (height, width) {
-                var statusBar = target.append('g')
-                    .attr('transform', 'translate(0,' + (height - SD_1COL_HEIGHT) + ")");
+                if (scope.showStatusBar) {
+                    var statusBar = target.append('g')
+                        .attr('transform', 'translate(0,' + (height - SD_1COL_HEIGHT) + ")");
 
-                statusBar.append('rect')
-                    .classed('geneview-statusbar', true)
-                    .attr('width', width)
-                    .attr('height', SD_1COL_HEIGHT);
+                    statusBar.append('rect')
+                        .classed('geneview-statusbar', true)
+                        .attr('width', width)
+                        .attr('height', SD_1COL_HEIGHT);
 
-                statusText = statusBar.append('text')
-                    .attr('transform', 'translate(5,' + STATUS_TEXT_YSHIFT + ")");
+                    statusText = statusBar.append('text')
+                        .attr('transform', 'translate(5,' + STATUS_TEXT_YSHIFT + ")");
 
+                }
+            }
+
+            function updateStatusText(text) {
+                if (scope.showStatusBar)
+                {
+                    statusText.text(text);
+                }
             }
 
             function drawBand(bandID, type) {
@@ -179,24 +193,35 @@
 
             target.attr({width: scope.width});
             drawStatusBar(scope.height, scope.width);
-            statusText.text('Requesting: ' + scope.chr +' : ' + scope.start + " : " + scope.stop);
+            updateStatusText('Requesting: ' + scope.chr +' : ' + scope.start + " : " + scope.stop);
             drawBand("q14.11", "gpos66");
 
             var geneTip = d3.tip()
                 .attr('class', 'd3-tip')
-                .direction('s')
+                .direction('n')
+                .offset([-5,0])
+                .html(function(d) {
+                    var tiptemp = '<span>' + d.gene.symbol + "</span> ";
+                    return tiptemp;
+                });
+
+            var geneDetailedTip = d3.tip()
+                .attr('class', 'd3-tip')
+                .direction('n')
                 .offset([8,0])
                 .html(function(d) {
                     var tiptemp = '<span style=\"color:red\">' + d.gene.symbol + "</span>: " + d.gene.desc;
                     return tiptemp;
                 });
 
-            target.call(geneTip);
+            target.call(geneTip).call(geneDetailedTip);
 
             geneLoader.getGenes(scope.chr, scope.start, scope.stop, function(data) {
 
                 if (typeof data.err ==='undefined') {
-                    statusText.text('Done');
+
+                    updateStatusText('Ready')
+
                     function isBadVar(res) {
                         return ((res == null) || (typeof res === 'undefined') || (res == ''));
                     }
@@ -234,14 +259,14 @@
                         .attr('height', SD_1COL_HEIGHT / 2)
                         .attr('y', function(d) {
                             var t = (+d.track +1) * (SD_1COL_HEIGHT);
-                            console.log(t);
                             return (+d.track +1) * (SD_1COL_HEIGHT);
                         });
 
                     gene.append('title').text(function(d){return d.gene.symbol});
 
                     gene.on('mouseover', geneTip.show)
-                        .on('mouseout', geneTip.hide)
+                        .on('mouseout', geneTip.hide);
+                        //.on('click', geneDetailedTip.show);
 
                 } else {
                     statusText.text(data.err);
@@ -255,11 +280,11 @@
             restrict: 'AE',
             scope: {
                 chr : '@',
-                start: '@',
-                selectedBands: '=',
-                stop: '@',
+                start: '=',
+                stop: '=',
                 height: '@',
-                width:'@'
+                width:'@',
+                showStatusBar: '=?'
             }
 
         };
