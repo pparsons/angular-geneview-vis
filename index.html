@@ -9,11 +9,12 @@
 
 
 <body ng-controller="mainCtrl">
-	<div chromosome chr="13" rel-size="false" axis="true" assembly="37" width='900' height="20" mode="single" centromere="dot"></div>
+	<div chromosome chr="5" rel-size="false" axis="true" assembly="37" width='900' height="20" mode="single" centromere="dot">
+        <div geneview show-status=false></div>
+    </div>
 
-    <button ng-click="clk()">submit</button>
    <br/>
-    <div geneview chr="{{chr}}" start="start" stop="stop" height="100" width="900" show-status-bar=false></div>
+    <!--<div geneview chr="{{chr}}" start="start" stop="stop" height="120" width="900" show-status-bar=false band-Model="bandModel"></div>-->
 
 
 
@@ -36,13 +37,6 @@
 
         demoApp.controller('mainCtrl', ['$scope', function($scope) {
 
-            $scope.start = "29161838";
-            $scope.stop = "30393082";
-            $scope.chr = "13";
-
-            $scope.clk = function() {
-                this.start = '20000000';
-            }
 
         }]);
 
