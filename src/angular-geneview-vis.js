@@ -148,7 +148,7 @@
                     .direction('n')
                     .offset([-5,0])
                     .html(function(d) {
-                        var tiptemp = '<span>' + d.gene.symbol + "</span> ";
+                        var tiptemp = '<div class="gene-tip"><span style="color:#ffb006">' + d.gene.symbol + "</span> <div>"+ d.gene.desc + "</div></div> ";
                         return tiptemp;
                     }
                 );
