@@ -108,7 +108,7 @@
 
         function link(scope, element, attr, chrAPI) {
 
-            var target, xscale, axis, statusBar, statusText, geneTip;
+            var target, xscale, axis, statusBar, statusText, geneTip, divParent;
             var SD_1COL_HEIGHT = 20,
                 GENES_YSHIFT = 34;
 
@@ -133,9 +133,9 @@
                     .range([0, +scope.width])
                     .domain([scope.boundFrom, scope.boundTo]);
 
-                var divParent = d3.select(element[0]).select('.angular-geneview-vis')
-                    .style('height', scope.height)
-                    .style('width', chrConfigs.width + 'px');
+                divParent = d3.select(element[0]).select('.angular-geneview-vis')
+                    .style('width', chrConfigs.width + 'px')
+                    .style('height', scope.height + "px");
 
                 divParent.select('svg').remove();
 
@@ -273,19 +273,23 @@
             }
 
             function adjustGeneViewHeight(trackCount) {
+
                 var yShift = (trackCount + 1) * SD_1COL_HEIGHT + (SD_1COL_HEIGHT * 4);
-                target.attr('height', yShift);
+
+                divParent.style('height', yShift + "px");
+
+                target.transition()
+                    .attr('height', yShift);
 
                 if (scope.showStatus) {
                     statusBar.attr('transform', 'translate(0,' + (yShift - SD_1COL_HEIGHT) + ")");
                 }
 
-
-                var axisShiftExtra = scope.showStatus ? 0 : SD_1COL_HEIGHT;
-                axis.selectAll('.tick line').attr('y2', yShift + axisShiftExtra - (SD_1COL_HEIGHT * 2));
+                var extraShift = scope.showStatus ? SD_1COL_HEIGHT : 0;
+                axis.selectAll('.tick line').attr('y2', yShift - extraShift - (SD_1COL_HEIGHT * 2));
 
                 target.selectAll('.sensitivityBorders')
-                    .attr('height', yShift);
+                    .attr('height', yShift - (2*extraShift));
 
             }
 
@@ -297,7 +301,7 @@
                     'opacity': 0.2
                 };
 
-                var height = scope.height - SD_1COL_HEIGHT;
+                var height = scope.showStatus ? scope.height - 2 * SD_1COL_HEIGHT : scope.height - SD_1COL_HEIGHT;
 
                 var w = xscale(scope.selectorStart) - xscale(scope.boundFrom);
 
