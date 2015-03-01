@@ -9,11 +9,21 @@
 
 
 <body ng-controller="mainCtrl">
-	<div chromosome chr="5" rel-size="false" axis="true" assembly="37" width='900' height="20" mode="single" centromere="dot">
-        <div geneview show-status=false></div>
-    </div>
 
-   <br/>
+    <chromosome id="chr1" chr="1" rel-size="false" axis="true" assembly="37" width='1000' height="20" mode="multi" centromere="dot" geneview-map="true">
+        <div geneview show-status='true'></div>
+    </chromosome>
+
+    <chromosome id="chr5" chr="5" rel-size="true" axis="true" assembly="37" width='1000' height="20" mode="single" centromere="dot" geneview-map="true">
+        <div geneview show-status='true'></div>
+    </chromosome>
+
+    <chromosome id="chrx" chr="X" rel-size="true" axis="true" assembly="37" width='1000' height="20" mode="single" centromere="dot" geneview-map="true">
+        <div geneview show-status='false'></div>
+    </chromosome>
+
+
+    <br/>
     <!--<div geneview chr="{{chr}}" start="start" stop="stop" height="120" width="900" show-status-bar=false band-Model="bandModel"></div>-->
 
 
