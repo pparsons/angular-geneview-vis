@@ -5,10 +5,20 @@
 	
 	<link rel="stylesheet" href="bower_components/angular-chromosome-vis/angular-chromosome-vis.css" />
     <link rel="stylesheet" href="src/angular-geneview-vis.css" />
+
+    <style>
+
+        #container{
+            margin:auto;
+            width: 1000px;
+        }
+    </style>
 </head>
 
 
 <body ng-controller="mainCtrl">
+
+<div id="container">
 
     <chromosome id="chr1" chr="1" rel-size="false" axis="true" assembly="37" width='1000' height="20" mode="multi" centromere="dot" geneview-map="true">
         <div geneview show-status='true'></div>
@@ -21,6 +31,9 @@
     <chromosome id="chrx" chr="X" rel-size="true" axis="true" assembly="37" width='1000' height="20" mode="single" centromere="dot" geneview-map="true">
         <div geneview show-status='false'></div>
     </chromosome>
+
+</div>
+
 
 
     <br/>
