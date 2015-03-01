@@ -285,11 +285,12 @@
                     statusBar.attr('transform', 'translate(0,' + (yShift - SD_1COL_HEIGHT) + ")");
                 }
 
-                var extraShift = scope.showStatus ? SD_1COL_HEIGHT : 0;
-                axis.selectAll('.tick line').attr('y2', yShift - extraShift - (SD_1COL_HEIGHT * 2));
+                var extraShift = scope.showStatus ? 0 : SD_1COL_HEIGHT;
+                var extraShiftInv = scope.showStatus ? SD_1COL_HEIGHT : 0;
+                axis.selectAll('.tick line').attr('y2', yShift + extraShift - (SD_1COL_HEIGHT * 2));
 
                 target.selectAll('.sensitivityBorders')
-                    .attr('height', yShift - (2*extraShift));
+                    .attr('height', yShift - (2*extraShiftInv));
 
             }
 
