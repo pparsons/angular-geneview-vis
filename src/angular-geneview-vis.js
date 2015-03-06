@@ -226,8 +226,6 @@
 					.text(function(d){return d.id});
 			}
 
-			//}
-
 			function updateStatusText(text) {
 				if (scope.showStatus)
 				{
@@ -403,7 +401,7 @@
 			scope: {
 				showStatus: '@'
 			},
-			templateUrl: 'angular-geneview-vis/src/geneview-template.html'
+			templateUrl: 'src/geneview-template.html'
 		};
 	}]);
 })();
