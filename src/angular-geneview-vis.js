@@ -301,18 +301,26 @@
 			}
 
 			function adjustGeneViewHeight(trackCount) {
-				var yShift = (trackCount + 1) * SD_1COL_HEIGHT + (SD_1COL_HEIGHT * 4);
-				target.attr('height', yShift);
+                var yShift = (trackCount + 1) * SD_1COL_HEIGHT + (SD_1COL_HEIGHT * 4);
 
-				if (scope.showStatus) {
-					statusBar.attr('transform', 'translate(0,' + (yShift - SD_1COL_HEIGHT) + ")");
-				}
+                divParent.style('height', yShift + "px");
 
+                target.transition()
+                    .attr('height', yShift);
 
+                if (scope.showStatus) {
+                    statusBar.attr('transform', 'translate(0,' + (yShift - SD_1COL_HEIGHT) + ")");
+                }
 
-				var axisShiftExtra = scope.showStatus ? 0 : SD_1COL_HEIGHT;
-				axis.selectAll('.tick line').attr('y2', yShift + axisShiftExtra - (SD_1COL_HEIGHT * 2));
+                var extraShift = scope.showStatus ? 0 : SD_1COL_HEIGHT;
+                var extraShiftInv = scope.showStatus ? SD_1COL_HEIGHT : 0;
+                axis.selectAll('.tick line').attr('y2', yShift + extraShift - (SD_1COL_HEIGHT * 2));
+
+                target.selectAll('.sensitivityBorders')
+                    .attr('height', yShift - (2 * extraShiftInv));
+
 			}
+
 			function drawSensitivityBorders() {
 				var borders = target.append('g');
 
