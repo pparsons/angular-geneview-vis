@@ -272,7 +272,7 @@
 					{
 						title: 'View in genome browser',
 						action: function(elm, d, i) {
-							$state.go("user.genomeBrowser");
+							//$state.go("user.genomeBrowser");
 							$rootScope.page=4;
 							$rootScope.$apply();
 						}
