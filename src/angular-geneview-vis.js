@@ -126,18 +126,22 @@
 			var SD_1COL_HEIGHT = 20,
 				GENES_YSHIFT = 34;
 
-			var init = function() {
-				var selectionModel = controllerInstance.getActiveSelection();
-				var chrConfigs = controllerInstance.getAttrs();
+                scope.display = true;
+                scope.activeSelection = selectionModel.getSelectedBands().bands;
+                scope.sensitivity = selectionModel.getSelectedBands().sensitivity;
+                scope.boundFrom = selectionModel.selStart - scope.sensitivity;
+                scope.boundTo = selectionModel.selEnd + scope.sensitivity;
+                scope.selectorStart = selectionModel.selStart;
+                scope.selectorEnd = selectionModel.selEnd;
+                scope.width = chrConfigs.width;
+                scope.chr = chrConfigs.chr;
+                scope.height = 120;
+                scope.showStatus = (scope.showStatus === true) ? true :(scope.showStatus === 'true');
+                scope.activeSelector = chrAPI.getActiveSelector();
 
-				scope.display = true;
-				scope.activeSelection = selectionModel.getSelectedBands();
-				scope.boundFrom = selectionModel.selStart;
-				scope.boundTo = selectionModel.selEnd;
-				scope.width = chrConfigs.width;
-				scope.chr = chrConfigs.chr;
-				scope.height = 120;
-				scope.showStatus = (scope.showStatus === true) ? true :(scope.showStatus === 'true');
+                xscale = d3.scale.linear()
+                    .range([0, +scope.width])
+                    .domain([scope.boundFrom, scope.boundTo]);
 
 				var divParent = d3.select(element[0]).select('.angular-geneview-vis')
 					.style('height', scope.height)
@@ -145,31 +149,45 @@
 
 				divParent.select('svg').remove();
 
-				target = divParent.append('svg')
-					.attr('height', scope.height)
-					.attr('width', scope.width);
+                geneTip = d3.tip()
+                    .attr('class', 'd3-tip')
+                    .direction('n')
+                    .offset([-5,0])
+                    .html(function(d) {
+                        var tiptemp = '<div class="gene-tip"><span style="color:#ffb006">' + d.gene.symbol + "</span> <div>"+ d.gene.desc + "</div></div> ";
+                        return tiptemp;
+                    }
+                );
 
-				geneTip = d3.tip()
-					.attr('class', 'd3-tip')
-					.direction('n')
-					.offset([-5,0])
-					.html(function(d) {
-						var tiptemp = '<span>' + d.gene.symbol + "</span> ";
-						return tiptemp;
-					}
-				);
+                geneTipDetailed = d3.tip()
+                    .attr('class', 'd3-tip gene-tip-detailed')
+                    .direction('n')
+                    .offset([-5,0])
+                    .html(function(d) {
+                        var tiptemp = '<div class="gene-tip"><span style="color:#ffb006">' + d.gene.symbol + '</span> <div>' +
+                            "<div><a href=\"#\">Link Desc 1" + '</div>' +
+                            "<div><a href=\"#\">Link Desc 2" + '</div>' +
+                            "</div></div> ";
+                        return tiptemp;
+                    }
+                );
 
-				target.call(geneTip);
-			};
+                target.call(geneTip);
+                target.call(geneTipDetailed);
 
-			function drawBands(bands) {
-				//console.log(bands);
-				var band = target.append('g')
-					.classed('geneview-bands', true)
-					.attr('transform', 'translate(0,' + SD_1COL_HEIGHT + ")")
-					.selectAll('g')
-					.data(bands).enter()
-					.append('g');
+                drawStatusBar();
+                updateStatusText("Initialized");
+            };
+
+            init();
+
+            function drawBands(bands) {
+                var band = target.append('g')
+                    .classed('geneview-bands', true)
+                    .attr('transform', 'translate(0,' + SD_1COL_HEIGHT + ")")
+                    .selectAll('g')
+                    .data(bands).enter()
+                    .append('g');
 
 
 				band.append('rect')
@@ -183,19 +201,19 @@
 					.attr('width', function(d) {
 						return xscale(d.end) - xscale(d.start);
 					});
-
-				band.append('text')
-					.attr('class', function(d) {
-						return d.type.substring(5) + '-text';
-					})
-					.attr('x', function(d) {
-
-						var sX = d.start < scope.boundFrom ? scope.boundFrom : d.start;
-						return xscale(sX) + 2;
-					})
-					.attr('y', 13)
-					.text(function(d){return d.id});
-
+band.append('text')
+                    .attr('class', function(d) {
+                        return d.type.substring(5) + '-text';
+                    })
+                    .attr('x', function(d) {
+                        var s = d.start < scope.boundFrom ? scope.boundFrom : d.start;
+                        var e = d.end < scope.boundTo ? d.end : scope.boundTo;
+                        var mid = s + ((e - s) / 2);
+                        return xscale(mid) - 5;
+                    })
+                    .attr('y', 13)
+                    .text(function(d){return d.id});
+            }
 
 			}
 
@@ -295,60 +313,77 @@
 					statusBar.attr('transform', 'translate(0,' + (yShift - SD_1COL_HEIGHT) + ")");
 				}
 
+            
 
 				var axisShiftExtra = scope.showStatus ? 0 : SD_1COL_HEIGHT;
 				axis.selectAll('.tick line').attr('y2', yShift + axisShiftExtra - (SD_1COL_HEIGHT * 2));
+}
+function drawSensitivityBorders() {
+                var borders = target.append('g');
 
+                var styleObj = {
+                    'fill' : '#666666',
+                    'opacity': 0.2
+                };
 
-			}
+                var height = scope.showStatus ? scope.height - 2 * SD_1COL_HEIGHT : scope.height - SD_1COL_HEIGHT;
 
-			scope.render = function() {
-				init();
-				drawStatusBar();
+                var w = xscale(scope.selectorStart) - xscale(scope.boundFrom);
 
-				if (scope.activeSelection.length > 0) {
-					updateStatusText('Requesting ...');
+                //left border
+                borders.append('rect')
+                    .classed('sensitivityBorders', true)
+                    .attr('x', xscale(scope.boundFrom))
+                    .attr('y', SD_1COL_HEIGHT)
+                    .attr('width', w)
+                    .attr('height', height)
+                    .style(styleObj);
 
-					//Search extra %x both ways for sensitivity
-					var SENSITIVITY = Math.round((scope.boundTo - scope.boundFrom) * 0);
+                borders.append('rect')
+                    .classed('sensitivityBorders', true)
+                    .attr('x', function(){
+                        return (xscale(scope.boundTo ) - w);
+                    })
+                    .attr('y', SD_1COL_HEIGHT)
+                    .attr('width', w)
+                    .attr('height', height)
+                    .style(styleObj);
+            }
+scope.render = function() {
+                init();
+                if (scope.activeSelection.length > 0) {
+                    updateStatusText('Requesting ...');
+                    drawScale();
+                    drawBands(scope.activeSelection);
+                    drawSensitivityBorders();
+                    geneLoader.getGenes(scope.chr, scope.boundFrom , scope.boundTo, function(data) {
+                        if (data.length == 0) {
+                            console.log('no data');
+                            updateStatusText("No Data");
+                            return;
+                        }
 
-					//console.log(scope.boundFrom, scope.boundTo, SENSITIVITY);
-					geneLoader.getGenes(scope.chr, scope.boundFrom - SENSITIVITY, scope.boundTo + SENSITIVITY, function(data) {
+                        if (typeof data.err ==='undefined') {
 
-						if (typeof data.err ==='undefined') {
-							updateStatusText('Loaded: ' + scope.chr +' [' + scope.boundFrom + " : " + scope.boundFrom + ']');
-							var geneDataSet = new GeneManager().process(data);
+                            var geneDataSet = new GeneManager().process(data);
 
-							var maxBP = d3.max(geneDataSet, function(d){ return +d.gene.end;});
-							var minBP = d3.min(geneDataSet, function(d){return +d.gene.start});
+                            var maxTrack = d3.max(geneDataSet, function(d) {return d.track});
 
-							xscale = d3.scale.linear()
-								.range([0, +scope.width])
-								.domain([minBP, maxBP]);
+                            drawGenes(geneDataSet);
 
-							drawScale();
-							var maxTrack = d3.max(geneDataSet, function(d) {return d.track});
-							adjustGeneViewHeight(maxTrack);
+                            adjustGeneViewHeight(maxTrack);
+                            updateStatusText('Loaded: ' + scope.chr +' [' + scope.boundFrom + " : " + scope.boundTo + '] Results: ' + geneDataSet.length);
 
-							drawGenes(geneDataSet);
-							drawBands(scope.activeSelection);
-
-						} else {
-							updateStatusText(data.err);
-						}
-
-					});
-
-
-				}
-				else {
-					updateStatusText("No active selectors");
-				}
-
-
-			}
-
-		}
+                        } else {
+                            updateStatusText(data.err);
+                        }
+                    });
+                }
+                else {
+                    updateStatusText("No active selectors");
+                }
+            }
+        }
 
 		return {
 			link: link,

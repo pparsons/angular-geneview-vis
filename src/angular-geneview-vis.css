@@ -44,6 +44,11 @@
     cursor: default;
 }
 
+.gene-tip-detailed a:link, .gene-tip-detailed a:visited {
+    color: #1181c0;
+    text-decoration: none;
+}
+
 .d3-tip {
     line-height: 1;
     font-weight: normal;
