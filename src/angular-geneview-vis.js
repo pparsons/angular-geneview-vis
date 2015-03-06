@@ -275,22 +275,27 @@
 					.selectAll('g')
 					.data(geneDataSet).enter().append('g');
 
-				gene.append('rect')
-					.classed('gene', true)
-					.attr('x', function(d) {
-						return d3.min([xscale(+d.gene.start), xscale(+d.gene.end)]);
-					})
-					.attr('width', function(d) {
-						var a = xscale(+d.gene.start) - xscale(+d.gene.end);
-						var b = xscale(+d.gene.end) - xscale(+d.gene.start);
+                gene.append('rect')
+                    .classed('gene', true)
+                    .attr('height', SD_1COL_HEIGHT / 2)
+                    .attr('x', function(d) {
+                        return d3.min([xscale(+d.gene.start), xscale(+d.gene.end)]);
+                    })
+                    .attr('y', function(d) {
+                        return (+d.track +1) * (SD_1COL_HEIGHT);
+                    })
+                    //Animate the gene width
+                    .attr('width', 0)
+                    .transition()
+                    .delay(function (d, i) { return i*10; })
+                    .duration(300)
+                    .attr('width', function(d) {
+                        var a = xscale(+d.gene.start) - xscale(+d.gene.end);
+                        var b = xscale(+d.gene.end) - xscale(+d.gene.start);
 
-						var w = d3.max([a,b]);
-						return w < 1 ? 2: w;
-					})
-					.attr('height', SD_1COL_HEIGHT / 2)
-					.attr('y', function(d) {
-						return (+d.track +1) * (SD_1COL_HEIGHT);
-					});
+                        var w = d3.max([a,b]);
+                        return w < 1 ? 2: w;
+                    });
 
 				gene.append('title').text(function(d){return d.gene.symbol});
 
