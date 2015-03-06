@@ -42,7 +42,7 @@
 		};
 	}]);
 
-	angularGeneviewVis.directive('geneview', ['geneLoader', '$state', '$rootScope', function(geneLoader, $state, $rootScope) {
+	angularGeneviewVis.directive('geneview', ['geneLoader', '$rootScope', /*'$state',*/ function(geneLoader, $rootScope, /*$state*/) {
 
 		/**
 		 * Manage gene data response
