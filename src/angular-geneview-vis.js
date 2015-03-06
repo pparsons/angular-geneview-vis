@@ -125,7 +125,7 @@
 
 		function link(scope, element, attrs, chrAPI) {
 
-			var target, xscale, axis, statusBar, statusText, geneTip, geneTipDetailed, divParent;
+			var target, xscale, axis, statusBar, statusText, geneTip, divParent;
 			var SD_1COL_HEIGHT = 20,
 				GENES_YSHIFT = 34;
 
@@ -170,21 +170,7 @@
 					}
 				);
 
-				geneTipDetailed = d3.tip()
-					.attr('class', 'd3-tip gene-tip-detailed')
-					.direction('n')
-					.offset([-5,0])
-					.html(function(d) {
-						var tiptemp = '<div class="gene-tip"><span style="color:#ffb006">' + d.gene.symbol + '</span> <div>' +
-							"<div><a href=\"#\">Link Desc 1" + '</div>' +
-							"<div><a href=\"#\">Link Desc 2" + '</div>' +
-							"</div></div> ";
-						return tiptemp;
-					}
-				);
-
 				target.call(geneTip);
-				target.call(geneTipDetailed);
 
 				drawStatusBar();
 				updateStatusText("Initialized");

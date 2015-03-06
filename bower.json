@@ -4,7 +4,7 @@
   "authors": [
     "Joe Lin <linjoeyy@gmail.com>"
   ],
-  "description": "angular directive for interactive gene positional representaitonl",
+  "description": "angular directive for interactive gene positional representation",
   "license": "MIT",
   "ignore": [
     "**/.*",
