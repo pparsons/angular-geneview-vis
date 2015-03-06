@@ -9,7 +9,10 @@
 		//hard code
 		//$rootScope.server = 'http://localhost:9090';
 
+		//this way will work inside the cytoApp
 		var serverScriptAddr = $rootScope.server + '/soscip/api/getgenes.php?';
+
+		
 		return {
 			getGenes : function (chr, start, stop, cb) {
 				//var url = serverScriptAddr + 'chr=' + chr + '&start=' + start + '&stop=' + stop;
@@ -129,10 +132,6 @@
 			var init = function() {
 				var selectionModel = chrAPI.getActiveSelection();
 				var chrConfigs = chrAPI.getAttrs();
-
-				if (chrConfigs.width === 'inherit') {
-
-				}
 
 				scope.display = true;
 				scope.activeSelection = selectionModel.getSelectedBands().bands;
