@@ -129,6 +129,12 @@
 			var SD_1COL_HEIGHT = 20,
 				GENES_YSHIFT = 34;
 
+			//when selector has a new location
+			scope.$on("selector:newLoc", function(e, arg) {
+				scope.render();
+			});
+
+
 			var init = function() {
 				var selectionModel = chrAPI.getActiveSelection();
 				var chrConfigs = chrAPI.getAttrs();
