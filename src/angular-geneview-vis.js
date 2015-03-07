@@ -151,7 +151,7 @@
 					.domain([scope.boundFrom, scope.boundTo]);
 
 				divParent = d3.select(element[0]).select('.angular-geneview-vis')
-					.style('height', scope.height)
+					.style('height', scope.height + 'px')
 					.style('width', chrConfigs.width + 'px');
 
 				divParent.select('svg').remove();
