@@ -411,10 +411,8 @@
                         end = +geneData[i].gene.end;
                     }
 
-                    //articleData[geneSymbol] = {
-                    //    articleCount: count,
-                    //    midLocation : (start + end) / 2
-                    //}
+                    var mid = (start + end) / 2;
+                    if (isNaN(mid)) continue;
                     res.push({
                         gene: geneSymbol,
                         articleCount: count,
@@ -450,12 +448,6 @@
 
 							adjustGeneViewHeight(maxTrack);
 							updateStatusText('Loaded: ' + scope.chr +' [' + scope.boundFrom + " : " + scope.boundTo + '] Results: ' + geneDataSet.length);
-
-                            //if (scope.articleStats) {
-                            //    var gs = extractGeneSymbol(geneDataSet);
-                            //    console.log(gs);
-                            //    renderArticleStats(gs);
-                            //}
 
                             if (scope.articleStats) {
                                 articleStatLoader.getArticleCount(extractGeneSymbol(geneDataSet), function(aCount) {
@@ -507,7 +499,7 @@
             link : function(scope, element, attrs, geneviewAPI) {
 
                 var xscale, height = 60;
-                var margin = {top: 5, right: 20, bottom: 5, left: 0};
+                var margin = {top: 5, right: 20, bottom: 8, left: 20};
 
                 var ylAxis = d3.svg.axis()
                     .orient('right')
@@ -522,26 +514,26 @@
                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 
+                target.append('text')
+                    .text('Article Count')
+                    .attr("transform", "translate(" +10 + "," + (height - 3) + ") rotate(-90)");
+
                 var line = d3.svg.line();
 
                 var yscale = d3.scale.linear()
-                    .range([0, height - margin.bottom]);
+                    .range([margin.top, height - margin.bottom]);
 
                 //render updated data
                 scope.$watch('data', function(data){
                     if(typeof data !== 'undefined') {
-
-
                         target.attr('width', scope.width);
-
-                        console.log(data);
 
                         data.sort(function(a, b) {
                            if(a.midLocation < b.midLocation) return -1;
                            if(a.midLocation > b.midLocation) return 1;
                            return 0;
                         });
-                        console.log("sort:",data);
+
                         var maxArticleCount = d3.max(data, function(d){ return d.articleCount;});
                         yscale.domain([0, maxArticleCount]);
                         xscale = geneviewAPI.getXscale();
@@ -558,10 +550,6 @@
                             .datum(data)
                             .classed('line', true)
                             .attr('d', line);
-
-                        console.log(maxArticleCount, yscale(772));
-
-
 
                     }
                 })
