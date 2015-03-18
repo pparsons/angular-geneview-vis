@@ -1,9 +1,10 @@
 <div>
 
-    <div class="angular-geneview-vis" ng-show="display">
+    <div class="angular-geneview-vis" ng-show="displayGeneview">
         <svg>
-            <rect width = '10' height="20"></rect>
         </svg>
     </div>
+    <article-view class="article-view" data="articleData" ng-show="articleStats && displayGeneview" width="width">
+    </article-view>
 	<button class="btn btn-sm btn-default" ng-click="render()">submit</button>
 </div>
