@@ -308,7 +308,7 @@
 					.selectAll('g')
 					.data(geneDataSet).enter().append('g');
 
-				gene.append('rect')
+				scope.gene.append('rect')
 					.classed('gene', true)
 					.attr('id', function(d) {
 						return 'gene_' + d.gene.symbol;
