@@ -196,13 +196,16 @@
 			//init();
 
 			function drawBands(bands) {
+
+                //  Average band label width
+                var LABEL_WIDTH = 26;
+
 				var band = target.append('g')
 					.classed('geneview-bands', true)
 					.attr('transform', 'translate(0,' + SD_1COL_HEIGHT + ")")
 					.selectAll('g')
 					.data(bands).enter()
 					.append('g');
-
 
 				band.append('rect')
 					.attr('class', function(d) {
@@ -215,18 +218,27 @@
 					.attr('width', function(d) {
 						return scope.xscale(d.end) - scope.xscale(d.start);
 					});
+
 				band.append('text')
 					.attr('class', function(d) {
 						return d.type.substring(5) + '-text';
 					})
+                    .text(function(d) {
+                        var bandw = scope.xscale(d.end) - scope.xscale(d.start);
+                        if (bandw < LABEL_WIDTH) {
+                            return "";
+                        }
+
+                        return d.id
+                    })
 					.attr('x', function(d) {
+
 						var s = d.start < scope.boundFrom ? scope.boundFrom : d.start;
 						var e = d.end < scope.boundTo ? d.end : scope.boundTo;
 						var mid = s + ((e - s) / 2);
-						return scope.xscale(mid) - 5;
+						return scope.xscale(mid) - (LABEL_WIDTH/2);
 					})
-					.attr('y', 13)
-					.text(function(d){return d.id});
+					.attr('y', 13);
 			}
 
 			function updateStatusText(text) {
