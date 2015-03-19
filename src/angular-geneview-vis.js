@@ -434,7 +434,7 @@
 					drawScale();
 					drawBands(scope.activeSelection);
 					drawSensitivityBorders();
-					geneLoader.getGenes(scope.chr, scope.boundFrom , scope.boundTo, function(data) {
+					scope.geneLoadPromise = geneLoader.getGenes(scope.chr, scope.boundFrom , scope.boundTo, function(data) {
 
 						if (data.length == 0) {
 							console.log('no data');
