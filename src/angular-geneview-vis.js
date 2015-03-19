@@ -6,9 +6,6 @@
 
 	angularGeneviewVis.factory('geneLoader', ['$http', '$rootScope', function($http, $rootScope) {
 
-		//hard code
-		//$rootScope.server = 'http://localhost:9090';
-
 		//this way will work inside the cytoApp
 		var serverScriptAddr = $rootScope.server + '/soscip/api/getgenes.php?';
 		return {
@@ -154,7 +151,7 @@
 				scope.displayGeneview = true;
                 scope.articleStats = (scope.articleStats === true) ? true :(scope.articleStats === 'true');
 				scope.activeSelection = selectionModel.getSelectedBands().bands;
-				scope.sensitivity = selectionModel.getSelectedBands().sensitivity;
+				scope.sensitivity = Math.round(selectionModel.getSelectedBands().sensitivity);
 				scope.boundFrom = selectionModel.selStart - scope.sensitivity;
 				scope.boundTo = selectionModel.selEnd + scope.sensitivity;
 				scope.selectorStart = selectionModel.selStart;
@@ -173,11 +170,6 @@
 				divParent = d3.select(element[0]).select('.angular-geneview-vis')
 					.style('height', scope.height + 'px')
 					.style('width', chrConfigs.width + 'px');
-
-                //if (scope.articleStats) {
-                //    articleTarget = divParent.select('.angular-geneview-vis-article')
-                //        .style('width', chrConfigs.width + 'px');
-                //}
 
 				divParent.select('svg').remove();
 
@@ -347,7 +339,7 @@
                 axis.selectAll('.tick line').attr('y2', yShift + extraShift - (SD_1COL_HEIGHT * 2));
 
                 target.selectAll('.sensitivityBorders')
-                    .attr('height', yShift - (2 * extraShiftInv));
+                    .attr('height', yShift - (extraShiftInv));
 
 			}
 
@@ -360,8 +352,8 @@
 				};
 
 				var height = scope.showStatus
-                    ? scope.height - 2 * SD_1COL_HEIGHT
-                    : scope.height - SD_1COL_HEIGHT;
+                    ? scope.height - SD_1COL_HEIGHT
+                    : scope.height;
 
 				var w = scope.xscale(scope.selectorStart) - scope.xscale(scope.boundFrom);
 
@@ -369,7 +361,7 @@
 				borders.append('rect')
 					.classed('sensitivityBorders', true)
 					.attr('x', scope.xscale(scope.boundFrom))
-					.attr('y', SD_1COL_HEIGHT)
+					.attr('y', 0)
 					.attr('width', w)
 					.attr('height', height)
 					.style(styleObj);
@@ -377,9 +369,9 @@
 				borders.append('rect')
 					.classed('sensitivityBorders', true)
 					.attr('x', function(){
-						return (scope.xscale(scope.boundTo ) - w);
+						return (scope.xscale(scope.boundTo) - w);
 					})
-					.attr('y', SD_1COL_HEIGHT)
+					.attr('y', 0)
 					.attr('width', w)
 					.attr('height', height)
 					.style(styleObj);
@@ -512,7 +504,6 @@
                 var g = target.append('g')
                     .classed('article-scale', true)
                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
 
                 target.append('text')
                     .text('Article Count')

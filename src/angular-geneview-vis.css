@@ -3,6 +3,12 @@
     border: 1px solid #708090;
 }
 
+.angular-geneview-vis-articles {
+    border-bottom: thin solid black;
+    border-left: thin solid black;
+    border-right: thin solid black;
+}
+
 .angular-geneview-vis text {
     font: 11px sans-serif;
 }
