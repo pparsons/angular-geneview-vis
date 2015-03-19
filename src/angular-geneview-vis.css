@@ -3,12 +3,18 @@
     border: 1px solid #708090;
 }
 
+.angular-geneview-vis-articles {
+    border-bottom: thin solid black;
+    border-left: thin solid black;
+    border-right: thin solid black;
+}
+
 .angular-geneview-vis text {
     font: 11px sans-serif;
 }
 
-.angular-geneview-vis .geneview-scale path,
-.angular-geneview-vis .geneview-scale line {
+.geneview-scale path,
+.geneview-scale line {
     stroke: #d4d4d4;
     fill: none;
     shape-rendering: crispEdges;
@@ -44,9 +50,8 @@
     cursor: default;
 }
 
-.gene-tip-detailed a:link, .gene-tip-detailed a:visited {
-    color: #1181c0;
-    text-decoration: none;
+.gene-tip {
+    max-width: 200px;
 }
 
 .d3-tip {
@@ -103,4 +108,20 @@
     margin: -4px 0 0 -1px;
     top: 50%;
     left: 100%;
+}
+
+.article-view text {
+    font: 9px sans-serif;
+    color: #8192a4;
+}
+
+.article-scale path {
+    fill: none;
+    stroke: #8192a4;
+    shape-rendering: crispEdges;
+}
+
+.article-view .line {
+    fill: none;
+    stroke: #ff2f28;
 }

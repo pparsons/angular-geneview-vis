@@ -1,7 +1,7 @@
 
 # angular-geneview-vis
 
-Iteractive visualization for relative gene locations
+Interactive visualization for relative gene locations
 
 # development
 

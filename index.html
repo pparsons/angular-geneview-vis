@@ -5,6 +5,7 @@
 	
 	<link rel="stylesheet" href="bower_components/angular-chromosome-vis/angular-chromosome-vis.css" />
     <link rel="stylesheet" href="src/angular-geneview-vis.css" />
+    <link rel="stylesheet" href="bower_components/angular-busy/dist/angular-busy.min.css" />
 
     <style>
 
@@ -29,8 +30,13 @@
                 mode="single"
                 centromere="dot" geneview-map="true">
 
-        <div geneview show-status='false'></div>
+        <geneview show-status="false" article-stats="true">
+
+        </geneview>
     </chromosome>
+
+
+
 
     <!--<chromosome id="chrx" chr="X" rel-size="true" axis="true" assembly="37" width='1000' height="20" mode="single" centromere="dot" geneview-map="true">-->
         <!--<div geneview show-status='false'></div>-->
@@ -52,6 +58,7 @@
 
 	<script src="bower_components/angular-chromosome-vis/angular-chromosome-vis.js"></script>
 	<script src="bower_components/jsdas/jsdas.min.js"></script>
+    <script src="bower_components/angular-busy/dist/angular-busy.js"></script>
 
     <!--Geneview script dependencies-->
     <script src="src/angular-geneview-vis.js"></script>
@@ -61,18 +68,15 @@
 
     <script>
 
-        var demoApp = angular.module('demoApp', ['angularChromosomeVis', 'angularGeneviewVis']);
+        var demoApp = angular.module('demoApp', ['angularChromosomeVis', 'angularGeneviewVis', 'cgBusy']);
 
         demoApp.controller('mainCtrl', ['$scope', '$rootScope', function($scope, $rootScope) {
 
             //api server address
-            $rootScope.server = "localhost:9090"
+            $rootScope.server = "localhost:9090";
 
 
         }]);
-
-
-
 
     </script>
 </body>
