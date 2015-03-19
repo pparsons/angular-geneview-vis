@@ -9,7 +9,7 @@
 		//this way will work inside the cytoApp
 		var serverScriptAddr = $rootScope.server + '/soscip/api/getgenes.php?';
 
-		
+
 		return {
 			getGenes : function (chr, start, stop, cb) {
 				//var url = serverScriptAddr + 'chr=' + chr + '&start=' + start + '&stop=' + stop;
@@ -25,7 +25,7 @@
 					url     :   '//' + $rootScope.server + '/soscip/api/getgenes.php',
 					params    :   params,
 					responseType : 'json',
-                    cache: true
+					cache: true
 				})
 					.success(function(data, status, headers, config) {
 						"use strict";
@@ -40,18 +40,18 @@
 		};
 	}]);
 
-    angularGeneviewVis.factory('articleStatLoader', ['$http', '$rootScope', function($http, $rootScope) {
+	angularGeneviewVis.factory('articleStatLoader', ['$http', '$rootScope', function($http, $rootScope) {
 
-        return {
-            getArticleCount: function(genes, cb) {
-                return $http.get('//'+$rootScope.server + '/soscip/api/genearticlestats.php?genes=' + genes)
-                    .success(function(d){
-                        cb(d);
-                    });
-            }
+		return {
+			getArticleCount: function(genes, cb) {
+				return $http.get('//'+$rootScope.server + '/soscip/api/genearticlestats.php?genes=' + genes)
+					.success(function(d){
+						cb(d);
+					});
+			}
 
-        };
-    }]);
+		};
+	}]);
 
 	angularGeneviewVis.directive('geneview', ['geneLoader','articleStatLoader', '$rootScope', '$state', '$q', 'gen2Phen', function(geneLoader, articleStatLoader, $rootScope, $state, $q, gen2Phen) {
 
@@ -153,7 +153,7 @@
 				var chrConfigs = chrAPI.getAttrs();
 
 				scope.displayGeneview = true;
-                scope.articleStats = (scope.articleStats === true) ? true :(scope.articleStats === 'true');
+				scope.articleStats = (scope.articleStats === true) ? true :(scope.articleStats === 'true');
 				scope.activeSelection = selectionModel.getSelectedBands().bands;
 				scope.sensitivity = Math.round(selectionModel.getSelectedBands().sensitivity);
 				scope.boundFrom = selectionModel.selStart - scope.sensitivity;
@@ -201,8 +201,8 @@
 
 			function drawBands(bands) {
 
-                //  Average band label width
-                var LABEL_WIDTH = 26;
+				//  Average band label width
+				var LABEL_WIDTH = 26;
 
 				var band = target.append('g')
 					.classed('geneview-bands', true)
@@ -227,14 +227,14 @@
 					.attr('class', function(d) {
 						return d.type.substring(5) + '-text';
 					})
-                    .text(function(d) {
-                        var bandw = scope.xscale(d.end) - scope.xscale(d.start);
-                        if (bandw < LABEL_WIDTH) {
-                            return "";
-                        }
+					.text(function(d) {
+						var bandw = scope.xscale(d.end) - scope.xscale(d.start);
+						if (bandw < LABEL_WIDTH) {
+							return "";
+						}
 
-                        return d.id
-                    })
+						return d.id
+					})
 					.attr('x', function(d) {
 
 						var s = d.start < scope.boundFrom ? scope.boundFrom : d.start;
@@ -308,26 +308,26 @@
 					.selectAll('g')
 					.data(geneDataSet).enter().append('g');
 
-                gene.append('rect')
-                    .classed('gene', true)
+				gene.append('rect')
+					.classed('gene', true)
 					.attr('id', function(d) {
 						return 'gene_' + d.gene.symbol;
 					})
-                    .attr('height', SD_1COL_HEIGHT / 2)
-                    .attr('x', function(d) {
-                        return d3.min([scope.xscale(+d.gene.start), scope.xscale(+d.gene.end)]);
-                    })
-                    .attr('y', function(d) {
-                        return (+d.track +1) * (SD_1COL_HEIGHT);
-                    })
-                    //Animate the gene width
-                    .attr('width', 0)
-                    .transition()
-                    .delay(function (d, i) { return i*10; })
-                    .duration(300)
-                    .attr('width', function(d) {
-                        var a = scope.xscale(+d.gene.start) - scope.xscale(+d.gene.end);
-                        var b = scope.xscale(+d.gene.end) - scope.xscale(+d.gene.start);
+					.attr('height', SD_1COL_HEIGHT / 2)
+					.attr('x', function(d) {
+						return d3.min([scope.xscale(+d.gene.start), scope.xscale(+d.gene.end)]);
+					})
+					.attr('y', function(d) {
+						return (+d.track +1) * (SD_1COL_HEIGHT);
+					})
+					//Animate the gene width
+					.attr('width', 0)
+					.transition()
+					.delay(function (d, i) { return i*10; })
+					.duration(300)
+					.attr('width', function(d) {
+						var a = scope.xscale(+d.gene.start) - scope.xscale(+d.gene.end);
+						var b = scope.xscale(+d.gene.end) - scope.xscale(+d.gene.start);
 
 						var w = d3.max([a,b]);
 						return w < 1 ? 2: w;
@@ -349,16 +349,16 @@
 				target.transition()
 					.attr('height', yShift);
 
-                if (scope.showStatus) {
-                    statusBar.attr('transform', 'translate(0,' + (yShift - SD_1COL_HEIGHT) + ")");
-                }
+				if (scope.showStatus) {
+					statusBar.attr('transform', 'translate(0,' + (yShift - SD_1COL_HEIGHT) + ")");
+				}
 
-                var extraShift = scope.showStatus ? 0 : SD_1COL_HEIGHT;
-                var extraShiftInv = scope.showStatus ? SD_1COL_HEIGHT : 0;
-                axis.selectAll('.tick line').attr('y2', yShift + extraShift - (SD_1COL_HEIGHT * 2));
+				var extraShift = scope.showStatus ? 0 : SD_1COL_HEIGHT;
+				var extraShiftInv = scope.showStatus ? SD_1COL_HEIGHT : 0;
+				axis.selectAll('.tick line').attr('y2', yShift + extraShift - (SD_1COL_HEIGHT * 2));
 
-                target.selectAll('.sensitivityBorders')
-                    .attr('height', yShift - (extraShiftInv));
+				target.selectAll('.sensitivityBorders')
+					.attr('height', yShift - (extraShiftInv));
 
 			}
 
@@ -371,8 +371,8 @@
 				};
 
 				var height = scope.showStatus
-                    ? scope.height - SD_1COL_HEIGHT
-                    : scope.height;
+					? scope.height - SD_1COL_HEIGHT
+					: scope.height;
 
 				var w = scope.xscale(scope.selectorStart) - scope.xscale(scope.boundFrom);
 
@@ -396,46 +396,46 @@
 					.style(styleObj);
 			}
 
-            /**
-             * Extract gene names to ; delimited string
-             * Used for passing to PHP
-             * @param genes
-             * @returns {string} e.g ATL;BRCA;PARP8
-             */
-            function extractGeneSymbol(genes){
-                var r = "";
-                for(var i = 0; i< genes.length; i++) {
-                    r = r.concat(genes[i].gene.symbol + ";");
-                }
-                r = r.substr(0, r.length - 1);
-                return r;
-            }
+			/**
+			 * Extract gene names to ; delimited string
+			 * Used for passing to PHP
+			 * @param genes
+			 * @returns {string} e.g ATL;BRCA;PARP8
+			 */
+			function extractGeneSymbol(genes){
+				var r = "";
+				for(var i = 0; i< genes.length; i++) {
+					r = r.concat(genes[i].gene.symbol + ";");
+				}
+				r = r.substr(0, r.length - 1);
+				return r;
+			}
 
-            function processGeneArticleData(geneData, articleData) {
+			function processGeneArticleData(geneData, articleData) {
 
-                var count = 0, start, end, res = [];
-                for(var i = 0; i < geneData.length; i++) {
-                    var geneSymbol = geneData[i].gene.symbol;
-                    if (articleData.hasOwnProperty(geneSymbol)) {
-                        count = articleData[geneSymbol];
-                        start = +geneData[i].gene.start;
-                        end = +geneData[i].gene.end;
-                    }
+				var count = 0, start, end, res = [];
+				for(var i = 0; i < geneData.length; i++) {
+					var geneSymbol = geneData[i].gene.symbol;
+					if (articleData.hasOwnProperty(geneSymbol)) {
+						count = articleData[geneSymbol];
+						start = +geneData[i].gene.start;
+						end = +geneData[i].gene.end;
+					}
 
-                    var mid = (start + end) / 2;
-                    if (isNaN(mid)) continue;
-                    res.push({
-                        gene: geneSymbol,
-                        articleCount: count,
-                        midLocation: (start + end) / 2
-                    });
-                }
+					var mid = (start + end) / 2;
+					if (isNaN(mid)) continue;
+					res.push({
+						gene: geneSymbol,
+						articleCount: count,
+						midLocation: (start + end) / 2
+					});
+				}
 
-                return res;
-            }
+				return res;
+			}
 
-            scope.render = function() {
-			scope.selectorPhenotypes = [];
+			scope.render = function() {
+				scope.selectorPhenotypes = [];
 				init();
 				if (scope.activeSelection.length > 0) {
 					updateStatusText('Requesting ...');
@@ -629,7 +629,7 @@
 							});
 
 							var geneDataSet = new GeneManager().process(data);
-                            //console.log(geneDataSet);
+							//console.log(geneDataSet);
 							var maxTrack = d3.max(geneDataSet, function(d) {return d.track});
 
 							drawGenes(geneDataSet);
@@ -637,12 +637,12 @@
 							adjustGeneViewHeight(maxTrack);
 							updateStatusText('Loaded: ' + scope.chr +' [' + scope.boundFrom + " : " + scope.boundTo + '] Results: ' + geneDataSet.length);
 
-                            if (scope.articleStats) {
-                                articleStatLoader.getArticleCount(extractGeneSymbol(geneDataSet), function(aCount) {
-                                    scope.articleData = processGeneArticleData(geneDataSet, aCount);
-                                });
+							if (scope.articleStats) {
+								articleStatLoader.getArticleCount(extractGeneSymbol(geneDataSet), function(aCount) {
+									scope.articleData = processGeneArticleData(geneDataSet, aCount);
+								});
 
-                            }
+							}
 
 						} else {
 							updateStatusText(data.err);
@@ -656,93 +656,93 @@
 
 		}
 
-        function controller($scope) {
-            this.getXscale = function() {
-                return $scope.xscale;
-            }
-        }
+		function controller($scope) {
+			this.getXscale = function() {
+				return $scope.xscale;
+			}
+		}
 
 		return {
-            controller: controller,
+			controller: controller,
 			link: link,
 			require : '^chromosome',
 			restrict: 'AE',
-            transclude:true,
+			transclude:true,
 			scope: {
 				showStatus: '@',
-                articleStats: '@'
+				articleStats: '@'
 			},
-			templateUrl: 'src/geneview-template.html'
+			templateUrl: 'angular-geneview-vis/src/geneview-template.html'
 		};
 	}]);
 
-    angularGeneviewVis.directive('articleView', ['articleStatLoader', function(articleStatLoader) {
-        return {
-            restrict: 'AE',
-            require: '^geneview',
-            scope: {
-                data: '=',
-                width: '='
-            },
-            link : function(scope, element, attrs, geneviewAPI) {
+	angularGeneviewVis.directive('articleView', ['articleStatLoader', function(articleStatLoader) {
+		return {
+			restrict: 'AE',
+			require: '^geneview',
+			scope: {
+				data: '=',
+				width: '='
+			},
+			link : function(scope, element, attrs, geneviewAPI) {
 
-                var xscale, height = 60;
-                var margin = {top: 5, right: 20, bottom: 8, left: 20};
+				var xscale, height = 60;
+				var margin = {top: 5, right: 20, bottom: 8, left: 20};
 
-                var ylAxis = d3.svg.axis()
-                    .orient('right')
-                    .ticks(4);
+				var ylAxis = d3.svg.axis()
+					.orient('right')
+					.ticks(4);
 
-                var target = d3.select(element[0]).append('svg')
-                    .classed('article-view', true)
-                    .attr('height', height);
+				var target = d3.select(element[0]).append('svg')
+					.classed('article-view', true)
+					.attr('height', height);
 
-                var g = target.append('g')
-                    .classed('article-scale', true)
-                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+				var g = target.append('g')
+					.classed('article-scale', true)
+					.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-                target.append('text')
-                    .text('Article Count')
-                    .attr("transform", "translate(" +10 + "," + (height - 3) + ") rotate(-90)");
+				target.append('text')
+					.text('Article Count')
+					.attr("transform", "translate(" +10 + "," + (height - 3) + ") rotate(-90)");
 
-                var line = d3.svg.line();
+				var line = d3.svg.line();
 
-                var yscale = d3.scale.linear()
-                    .range([margin.top, height - margin.bottom]);
+				var yscale = d3.scale.linear()
+					.range([margin.top, height - margin.bottom]);
 
-                //render updated data
-                scope.$watch('data', function(data){
-                    if(typeof data !== 'undefined') {
-                        target.attr('width', scope.width);
+				//render updated data
+				scope.$watch('data', function(data){
+					if(typeof data !== 'undefined') {
+						target.attr('width', scope.width);
 
-                        data.sort(function(a, b) {
-                           if(a.midLocation < b.midLocation) return -1;
-                           if(a.midLocation > b.midLocation) return 1;
-                           return 0;
-                        });
+						data.sort(function(a, b) {
+							if(a.midLocation < b.midLocation) return -1;
+							if(a.midLocation > b.midLocation) return 1;
+							return 0;
+						});
 
-                        var maxArticleCount = d3.max(data, function(d){ return d.articleCount;});
-                        yscale.domain([0, maxArticleCount]);
-                        xscale = geneviewAPI.getXscale();
+						var maxArticleCount = d3.max(data, function(d){ return d.articleCount;});
+						yscale.domain([0, maxArticleCount]);
+						xscale = geneviewAPI.getXscale();
 
-                        ylAxis.scale(yscale);
+						ylAxis.scale(yscale);
 
-                        g.call(ylAxis);
+						g.call(ylAxis);
 
-                        line.x(function(d){ return xscale(d.midLocation)})
-                            .y(function(d){ return yscale(d.articleCount)});
+						line.x(function(d){ return xscale(d.midLocation)})
+							.y(function(d){ return yscale(d.articleCount)});
 
-                        target.select('.line').remove();
-                        target.append("path")
-                            .datum(data)
-                            .classed('line', true)
-                            .attr('d', line);
+						target.select('.line').remove();
+						target.append("path")
+							.datum(data)
+							.classed('line', true)
+							.attr('d', line);
 
-                    }
-                })
-            }
+					}
+				})
+			}
 
-        };
-    }]);
+		};
+	}]);
 
 })();
