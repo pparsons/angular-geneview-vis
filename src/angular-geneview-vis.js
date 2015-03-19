@@ -264,7 +264,7 @@
 					{
 						title: 'View in genome browser',
 						action: function(elm, d, i) {
-							//$state.go("user.genomeBrowser");
+							$state.go("user.genomeBrowser");
 							$rootScope.page=4;
 							$rootScope.$apply();
 						}
@@ -278,59 +278,62 @@
 					}
 				]
 
-				var gene = target.append('g')
+				scope.gene = target.append('g')
 					.attr('transform', 'translate(0,' + GENES_YSHIFT +")")
 					.selectAll('g')
 					.data(geneDataSet).enter().append('g');
 
-                gene.append('rect')
-                    .classed('gene', true)
-                    .attr('height', SD_1COL_HEIGHT / 2)
-                    .attr('x', function(d) {
-                        return d3.min([xscale(+d.gene.start), xscale(+d.gene.end)]);
-                    })
-                    .attr('y', function(d) {
-                        return (+d.track +1) * (SD_1COL_HEIGHT);
-                    })
-                    //Animate the gene width
-                    .attr('width', 0)
-                    .transition()
-                    .delay(function (d, i) { return i*10; })
-                    .duration(300)
-                    .attr('width', function(d) {
-                        var a = xscale(+d.gene.start) - xscale(+d.gene.end);
-                        var b = xscale(+d.gene.end) - xscale(+d.gene.start);
+				scope.gene.append('rect')
+					.classed('gene', true)
+					.attr('id', function(d) {
+						return 'gene_' + d.gene.symbol;
+					})
+					.attr('height', SD_1COL_HEIGHT / 2)
+					.attr('x', function(d) {
+						return d3.min([xscale(+d.gene.start), xscale(+d.gene.end)]);
+					})
+					.attr('y', function(d) {
+						return (+d.track +1) * (SD_1COL_HEIGHT);
+					})
+					//Animate the gene width
+					.attr('width', 0)
+					.transition()
+					.delay(function (d, i) { return i*10; })
+					.duration(300)
+					.attr('width', function(d) {
+						var a = xscale(+d.gene.start) - xscale(+d.gene.end);
+						var b = xscale(+d.gene.end) - xscale(+d.gene.start);
 
-                        var w = d3.max([a,b]);
-                        return w < 1 ? 2: w;
-                    });
+						var w = d3.max([a,b]);
+						return w < 1 ? 2: w;
+					});
 
-				gene.append('title').text(function(d){return d.gene.symbol});
+				scope.gene.append('title').text(function(d){return d.gene.symbol});
 
-				gene.on('mouseover', geneTip.show)
+				scope.gene.on('mouseover', geneTip.show)
 					.on('mouseout', geneTip.hide)
 					//.on('contextmenu', d3.contextMenu(menu))
 					.on('mousedown', d3.contextMenu(menu));
 			}
 
 			function adjustGeneViewHeight(trackCount) {
-                var yShift = (trackCount + 1) * SD_1COL_HEIGHT + (SD_1COL_HEIGHT * 4);
+				var yShift = (trackCount + 1) * SD_1COL_HEIGHT + (SD_1COL_HEIGHT * 4);
 
-                divParent.style('height', yShift + "px");
+				divParent.style('height', yShift + "px");
 
-                target.transition()
-                    .attr('height', yShift);
+				target.transition()
+					.attr('height', yShift);
 
-                if (scope.showStatus) {
-                    statusBar.attr('transform', 'translate(0,' + (yShift - SD_1COL_HEIGHT) + ")");
-                }
+				if (scope.showStatus) {
+					statusBar.attr('transform', 'translate(0,' + (yShift - SD_1COL_HEIGHT) + ")");
+				}
 
-                var extraShift = scope.showStatus ? 0 : SD_1COL_HEIGHT;
-                var extraShiftInv = scope.showStatus ? SD_1COL_HEIGHT : 0;
-                axis.selectAll('.tick line').attr('y2', yShift + extraShift - (SD_1COL_HEIGHT * 2));
+				var extraShift = scope.showStatus ? 0 : SD_1COL_HEIGHT;
+				var extraShiftInv = scope.showStatus ? SD_1COL_HEIGHT : 0;
+				axis.selectAll('.tick line').attr('y2', yShift + extraShift - (SD_1COL_HEIGHT * 2));
 
-                target.selectAll('.sensitivityBorders')
-                    .attr('height', yShift - (2 * extraShiftInv));
+				target.selectAll('.sensitivityBorders')
+					.attr('height', yShift - (2 * extraShiftInv));
 
 			}
 
