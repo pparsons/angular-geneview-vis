@@ -301,7 +301,7 @@
 							scope.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.litSubmit('term');
 						}
 					}
-				]
+				];
 
 				scope.gene = target.append('g')
 					.attr('transform', 'translate(0,' + GENES_YSHIFT +")")
