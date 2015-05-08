@@ -297,7 +297,7 @@
 							scope.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.litSubmit('term');
 						}
 					}
-				]
+				];
 
 				var gene = target.append('g')
 					.attr('transform', 'translate(0,' + GENES_YSHIFT +")")
@@ -563,7 +563,7 @@
                             .data(data).enter()
                             .append('g');
 
-                        console.log(data);
+                        //console.log(data);
 
                         gene.append('circle')
                             .attr('r', 2)
