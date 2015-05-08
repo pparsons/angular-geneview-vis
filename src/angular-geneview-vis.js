@@ -566,7 +566,7 @@
                         //console.log(data);
 
                         gene.append('circle')
-                            .attr('r', 2)
+                            .attr('r', 3)
                             .attr('cx', function(d){
                                 return xscale(d.midLocation);
                             })
@@ -594,7 +594,9 @@
                         });
 
                         gene.on('mouseout', function(d) {
+							var ge = d3.select(this).select('circle');
                             articleTip.hide(d);
+							ge.attr('fill', 'orange');
 
                         });
 
