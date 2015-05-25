@@ -297,8 +297,9 @@
 					{
 						title: 'Fetch related articles',
 						action: function(elm, d, i) {
-							scope.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.search.searchterms = d.gene.symbol;
-							scope.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.litSubmit('term');
+              $state.transitionTo('user.search', {'searchTerms':d.gene.symbol}, {
+                reload: false, inherit: false, notify: true, ignoreDsr: true
+              });
 						}
 					}
 				];
