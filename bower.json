@@ -1,8 +1,9 @@
 {
   "name": "angular-geneview-vis",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "authors": [
-    "Joe Lin <linjoeyy@gmail.com>"
+    "Joe Lin <linjoeyy@gmail.com>",
+    "Paul Parsons <paulparsons@gmail.com>"
   ],
   "description": "angular directive for interactive gene positional representation",
   "license": "MIT",
@@ -14,10 +15,10 @@
     "tests"
   ],
   "dependencies": {
-    "angular": "1.3.13",
+    "angular": "~1.4.0",
     "d3": "3.5.5",
-    "angular-chromosome-vis": "1.1.7",
-    "d3-tip": "0.6.6",
+    "angular-chromosome-vis": "1.1.9",
+    "d3-tip": "0.6.7",
     "d3-context-menu": "*",
     "angular-busy": "~4.1.2"
   },

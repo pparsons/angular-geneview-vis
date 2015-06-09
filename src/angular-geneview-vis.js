@@ -2,7 +2,7 @@
 
 (function() {
 
-	var angularGeneviewVis = angular.module('angularGeneviewVis', []);
+	var angularGeneviewVis = angular.module('angularGeneviewVis', [ ]);
 
 	angularGeneviewVis.factory('geneLoader', ['$http', '$rootScope', function($http, $rootScope) {
 
