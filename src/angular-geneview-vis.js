@@ -40,7 +40,7 @@
 		};
 	}])
 
-    .factory('gen2Phen', ['$http', '$rootScope', function($http, $rootScope) {
+	angularGeneviewVis.factory('gen2Phen', ['$http', '$rootScope', function($http, $rootScope) {
       return {
         omim: function(gene) {
           return $http({
