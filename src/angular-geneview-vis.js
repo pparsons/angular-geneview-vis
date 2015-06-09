@@ -84,7 +84,7 @@
 		};
 	}]);
 
-	angularGeneviewVis.directive('geneview', ['geneLoader','articleStatLoader', '$rootScope', '$state', '$q', 'gen2Phen', function(geneLoader, articleStatLoader, $rootScope, $state, $q, gen2Phen) {
+	angularGeneviewVis.directive('geneview', ['geneLoader','articleStatLoader', '$rootScope' /*,'$state'*/, '$q', 'gen2Phen', function(geneLoader, articleStatLoader, $rootScope/*,$state*/, $q, gen2Phen) {
 
 		/**
 		 * Manage gene data response
@@ -316,24 +316,24 @@
 
 			function drawGenes(geneDataSet) {
 
-				var menu = [
-					{
-						title: 'View in genome browser',
-						action: function(elm, d, i) {
-							$state.go("user.genomeBrowser");
-							$rootScope.page=3;
-							$rootScope.$apply();
-						}
-					},
-					{
-						title: 'Fetch related articles',
-						action: function(elm, d, i) {
-              $state.transitionTo('user.search', {'searchTerms':d.gene.symbol}, {
-                reload: false, inherit: false, notify: true, ignoreDsr: true
-              });
-						}
-					}
-				];
+				//var menu = [
+				//	{
+				//		title: 'View in genome browser',
+				//		action: function (elm, d, i) {
+				//			$state.go("user.genomeBrowser");
+				//			$rootScope.page = 3;
+				//			$rootScope.$apply();
+				//		}
+				//	},
+				//	{
+				//		title: 'Fetch related articles',
+				//		action: function (elm, d, i) {
+				//			$state.transitionTo('user.search', {'searchTerms': d.gene.symbol}, {
+				//				reload: false, inherit: false, notify: true, ignoreDsr: true
+				//			});
+				//		}
+				//	}
+				//];
 
 				scope.gene = target.append('g')
 					.attr('transform', 'translate(0,' + GENES_YSHIFT +")")
@@ -370,7 +370,7 @@
 				scope.gene.on('mouseover', geneTip.show)
 					.on('mouseout', geneTip.hide)
 					//.on('contextmenu', d3.contextMenu(menu))
-					.on('mousedown', d3.contextMenu(menu));
+					//.on('mousedown', d3.contextMenu(menu));
 			}
 
 			function adjustGeneViewHeight(trackCount) {
@@ -704,7 +704,7 @@
 				showStatus: '@',
 				articleStats: '@'
 			},
-			templateUrl: 'angular-geneview-vis/src/geneview-template.html'
+			templateUrl: 'src/geneview-template.html'
 		};
 	}]);
 
