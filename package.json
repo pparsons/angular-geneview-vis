@@ -1,0 +1,31 @@
+{
+  "name": "angular-geneview-vis",
+  "version": "0.1.2",
+  "description": "Angular directive for interactive gene positional representation",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/linjoey/angular-geneview-vis.git"
+  },
+  "keywords": [
+    "gene",
+    "chromosome",
+    "phenotype",
+    "visualization"
+  ],
+  "author": "Joe Lin <linjoeyy@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/linjoey/angular-geneview-vis/issues"
+  },
+  "homepage": "https://github.com/linjoey/angular-geneview-vis#readme",
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-concat": "^2.5.2",
+    "gulp-sourcemaps": "^1.5.2",
+    "gulp-wrap": "^0.11.0"
+  }
+}
