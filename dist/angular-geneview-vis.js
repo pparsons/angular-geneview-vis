@@ -1,3 +1,88 @@
+!function(){
+"use strict";
+
+var angularGeneviewVis = angular.module('angularGeneviewVis', []);
+
+angularGeneviewVis.value("version","0.1.2");
+
+angularGeneviewVis.factory('geneLoader', ['$http', '$rootScope', function($http, $rootScope) {
+
+    //this way will work inside the cytoApp
+    var serverScriptAddr = $rootScope.server + '/soscip/api/getgenes.php?';
+    return {
+        getGenes : function (chr, start, stop, cb) {
+            //var url = serverScriptAddr + 'chr=' + chr + '&start=' + start + '&stop=' + stop;
+
+            var params = {
+                chr: chr,
+                start: start,
+                stop: stop
+            }
+
+            return $http({
+                method  :   'GET',
+                url     :   '//' + $rootScope.server + '/soscip/api/getgenes.php',
+                params    :   params,
+                responseType : 'json',
+                cache: true
+            })
+                .success(function(data, status, headers, config) {
+                    "use strict";
+                    cb(data);
+                })
+
+                .error(function(data, status, headers, config){
+                    //handle error here
+                    cb({err:"Failed to load genes. Connection failed."});
+                });
+        }
+    };
+}])
+
+angularGeneviewVis.factory('gen2Phen', ['$http', '$rootScope', function($http, $rootScope) {
+    return {
+        omim: function(gene) {
+            return $http({
+                method: 'get',
+                url: '//' + $rootScope.server + '/soscip/api/gen2phen.php',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                params: {'gene': gene}
+            });
+        },
+        lit: function(gene) {
+            var searchParams = {
+                core: 'medline-citations',
+                handler: 'select',
+                searchFields: JSON.stringify(['genes']), //stringify the array so it is sent properly
+                query: gene,
+                years: {min:1950, max:2015},
+                start: 0,
+                rows: 100,
+                retFields: 'phenotypes'
+            };
+            return $http({
+                method: 'get',
+                url: '//' + $rootScope.server + '/soscip/api/search.php',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                params: searchParams
+            });
+        }
+    }
+}]);
+
+angularGeneviewVis.factory('articleStatLoader', ['$http', '$rootScope', function($http, $rootScope) {
+
+    return {
+        getArticleCount: function(genes, cb) {
+            return $http.get('//'+$rootScope.server + '/soscip/api/genearticlestats.php?genes=' + genes)
+                .success(function(d){
+                    cb(d);
+                });
+        }
+
+    };
+}]);
+
 angularGeneviewVis.directive('geneview', ['geneLoader','articleStatLoader', '$rootScope' /*,'$state'*/, '$q', 'gen2Phen', function(geneLoader, articleStatLoader, $rootScope/*,$state*/, $q, gen2Phen) {
 
     /**
@@ -466,7 +551,7 @@ angularGeneviewVis.directive('geneview', ['geneLoader','articleStatLoader', '$ro
                                     if (a.start > b.start) return 1;
                                     return 0;
                                 });
-
+                                
                                 scope.mappingsO = _.map(scope.g2pO, function(a,key) { var b = {}; b.symbol= a.symbol;b.phenotypes= a.phenotypes; return b;  });
 
                                 //adjust svg size
@@ -640,3 +725,165 @@ angularGeneviewVis.directive('geneview', ['geneLoader','articleStatLoader', '$ro
         templateUrl: 'src/geneview-template.html'
     };
 }]);
+
+
+angularGeneviewVis.directive('articleView', ['articleStatLoader', function(articleStatLoader) {
+    return {
+        restrict: 'AE',
+        require: '^geneview',
+        scope: {
+            data: '=',
+            width: '='
+        },
+        link : function(scope, element, attrs, geneviewAPI) {
+
+            var xscale, height = 60, articleTip;
+            var margin = {top: 5, right: 20, bottom: 8, left: 20};
+
+            var ylAxis = d3.svg.axis()
+                .orient('right')
+                .ticks(4);
+
+            var target = d3.select(element[0]).append('svg')
+                .classed('article-view', true)
+                .attr('height', height);
+
+            var g = target.append('g')
+                .classed('article-scale', true)
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            target.append('text')
+                .text('Article Count')
+                .attr("transform", "translate(" +10 + "," + (height - 3) + ") rotate(-90)");
+
+            var line = d3.svg.line();
+
+            var yscale = d3.scale.linear()
+                .range([margin.top, height - margin.bottom]);
+
+            //render updated data
+            scope.$watch('data', function(data) {
+                if(typeof data !== 'undefined') {
+                    target.attr('width', scope.width);
+
+                    data.sort(function(a, b) {
+                        if(a.midLocation < b.midLocation) return -1;
+                        if(a.midLocation > b.midLocation) return 1;
+                        return 0;
+                    });
+
+                    var maxArticleCount = d3.max(data, function(d){ return d.articleCount;});
+                    yscale.domain([0, maxArticleCount]);
+                    xscale = geneviewAPI.getXscale();
+
+                    ylAxis.scale(yscale);
+
+                    g.call(ylAxis);
+
+                    line.x(function(d){ return xscale(d.midLocation)})
+                        .y(function(d){ return yscale(d.articleCount)});
+
+                    target.selectAll('.line').remove();
+                    target.selectAll('.article-dots').remove();
+
+                    target.append("path")
+                        .datum(data)
+                        .classed('line', true)
+                        .attr('d', line);
+
+                    var gene = target.append('g')
+                        .classed('article-dots', true)
+                        //.attr('transform', 'translate(0,' + 0 + ")")
+                        .selectAll('g')
+                        .data(data).enter()
+                        .append('g');
+
+                    //console.log(data);
+
+                    gene.append('circle')
+                        .attr('r', 3)
+                        .attr('cx', function(d){
+                            return xscale(d.midLocation);
+                        })
+                        .attr('cy', function(d){
+                            return yscale(d.articleCount);
+                        })
+                        .attr('fill', 'orange');
+
+                    articleTip = d3.tip()
+                        .attr('class', 'd3-tip')
+                        .direction('w')
+                        .offset([0,-10])
+                        .html(function(d) {
+                            var tiptemp = '<div class="gene-tip"><span style="color:#3d91c0">' + d.gene + "</span> <div>" + d.articleCount + "</div></div> ";
+                            return tiptemp;
+                        }
+                    );
+
+                    target.call(articleTip);
+                    gene.on('mouseover', function(d){
+                        var ge = d3.select(this).select('circle');
+                        articleTip.show(d);
+                        ge.attr('fill','red');
+
+                    });
+
+                    gene.on('mouseout', function(d) {
+                        var ge = d3.select(this).select('circle');
+                        articleTip.hide(d);
+                        ge.attr('fill', 'orange');
+
+                    });
+
+                }
+            })
+        }
+
+    };
+}]);
+
+/**
+ * Created by paulparsons on 3/8/15.
+ */
+_.mixin({
+
+	// Get/set the value of a nested property
+	deep: function (obj, key, value) {
+
+		var keys = key.replace(/\[(["']?)([^\1]+?)\1?\]/g, '.$2').replace(/^\./, '').split('.'),
+			root,
+			i = 0,
+			n = keys.length;
+
+		// Set deep value
+		if (arguments.length > 2) {
+
+			root = obj;
+			n--;
+
+			while (i < n) {
+				key = keys[i++];
+				obj = obj[key] = _.isObject(obj[key]) ? obj[key] : {};
+			}
+
+			obj[keys[i]] = value;
+
+			value = root;
+
+			// Get deep value
+		} else {
+			while ((obj = obj[keys[i++]]) != null && i < n) {};
+			value = i < n ? void 0 : obj;
+		}
+
+		return value;
+	}
+
+});
+
+_.mixin({
+	pluckDeep: function (obj, key) {
+		return _.map(obj, function (value) { return _.deep(value, key); });
+	}
+});}();
+//# sourceMappingURL=angular-geneview-vis.js.map
