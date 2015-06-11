@@ -3,6 +3,7 @@
 
 Interactive visualization for relative gene locations
 
+Live Demo of latest code [HERE](http://104.236.236.182/angular-geneview-vis/)
 # Development
 
 Start web server for development:
