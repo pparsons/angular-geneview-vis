@@ -15,8 +15,10 @@ var DIST_FOLDER = './dist';
 var DIST_FILE_NAME = 'angular-geneview-vis.js';
 var WRAP_TEMPLATE = '!function(){\n"use strict";<%= contents %>}();';
 
+gulp.task('default',['dev'],function(){});
+
 gulp.task('dev', function(){
-    gulp.src(SOURCE_FILES)
+    return gulp.src(SOURCE_FILES)
         .pipe(sourcemaps.init({loadMaps:true}))
         .pipe(concat(DIST_FILE_NAME))
         .pipe(wrap(WRAP_TEMPLATE))
