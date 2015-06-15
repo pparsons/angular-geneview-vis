@@ -31,7 +31,7 @@
                 mode="single"
                 centromere="dot" geneview-map="true">
 
-        <geneview show-status="false" article-stats="false">
+        <geneview show-status="true" article-stats="false">
 
         </geneview>
     </chromosome>
@@ -61,11 +61,19 @@
 	<script src="bower_components/jsdas/jsdas.min.js"></script>
     <script src="bower_components/angular-busy/dist/angular-busy.js"></script>
 
-    <!--Geneview script dependencies-->
-    <script src="dist/angular-geneview-vis.js"></script>
-
     <script src="bower_components/d3-tip/index.js"></script>
     <script src="bower_components/d3-context-menu/js/d3-context-menu.js"></script>
+
+    <!--Geneview script dependencies-->
+    <!--For Release-->
+    <script src="dist/angular-geneview-vis.min.js"></script>
+
+    <!--&lt;!&ndash;For Development&ndash;&gt;-->
+    <!--<script src="src/js/index.js"></script>-->
+    <!--<script src="src/js/services.js"></script>-->
+    <!--<script src="src/js/geneview.js"></script>-->
+    <!--<script src="src/js/articlecount.js"></script>-->
+    <!--<script src="src/mixins.js"></script>-->
     <!------->
 
     <script>

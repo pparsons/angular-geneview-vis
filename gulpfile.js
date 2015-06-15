@@ -1,8 +1,12 @@
 /*global require*/
+"use strict";
 var gulp = require('gulp');
 var wrap = require('gulp-wrap');
 var sourcemaps = require('gulp-sourcemaps');
 var concat = require('gulp-concat');
+var uglify = require('gulp-uglify');
+var rename = require('gulp-rename');
+var jasmine = require('gulp-jasmine');
 
 var SOURCE_FILES = [
     'src/js/index.js',
@@ -12,21 +16,46 @@ var SOURCE_FILES = [
     'src/mixins.js'
 ];
 
+var TEST_FILES = ['test/spec/test_spec.js'];
+
 var DIST_FOLDER = './dist';
 var DIST_FILE_NAME = 'angular-geneview-vis.js';
 var WRAP_TEMPLATE = '!function(){\n"use strict";<%= contents %>}();';
 
-gulp.task('default',['dev'],function(){});
+gulp.task('default', ['dev', 'release', 'test'], function () {});
 
-gulp.task('dev', function(){
-    "use strict";
-    return gulp.src(SOURCE_FILES)
-        .pipe(sourcemaps.init({loadMaps:true}))
+function source() {
+    return gulp.src(SOURCE_FILES);
+}
+
+function output() {
+    return this.pipe(gulp.dest(DIST_FOLDER));
+}
+
+function bundle() {
+    return this
         .pipe(concat(DIST_FILE_NAME))
-        .pipe(wrap(WRAP_TEMPLATE))
-        .pipe(sourcemaps.write('./'))
-        .pipe(gulp.dest(DIST_FOLDER));
+        .pipe(wrap(WRAP_TEMPLATE));
+}
+
+gulp.task('dev', function () {
+    var s = bundle.call(source()
+        .pipe(sourcemaps.init({loadMaps: true})))
+        .pipe(sourcemaps.write('./'));
+
+    return output.call(s);
 });
 
-//TODO create task to build minified release file
-//TODO create jasmine test task
+gulp.task('release', function () {
+    var s = bundle.call(source())
+        .pipe(uglify({mangle: false}))
+        .pipe(rename('angular-geneview-vis.min.js'))
+        .pipe(gulp.dest(DIST_FOLDER));
+
+    return output.call(s);
+});
+
+gulp.task('test', function () {
+    return gulp.src(TEST_FILES)
+        .pipe(jasmine());
+});
