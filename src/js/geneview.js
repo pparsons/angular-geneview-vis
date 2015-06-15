@@ -1,4 +1,6 @@
-(function(){
+/*global angular, d3*/
+(function () {
+    "use strict";
     angular
         .module('angularGeneviewVis')
         .directive('geneview', ['geneLoader','articleStatLoader','geneManager', '$rootScope' /*,'$state'*/, '$q', 'gen2Phen', function(geneLoader,articleStatLoader,geneManager, $rootScope/*,$state*/, $q, gen2Phen) {
@@ -17,7 +19,7 @@
                 });
 
 
-                var init = function() {
+                var init = function () {
                     var selectionModel = chrAPI.getActiveSelection();
                     var chrConfigs = chrAPI.getAttrs();
 

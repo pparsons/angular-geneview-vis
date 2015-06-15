@@ -1,4 +1,6 @@
+/*global angular, d3*/
 (function(){
+    "use strict";
     angular
         .module('angularGeneviewVis')
         .directive('articleView', ['articleStatLoader', function(articleStatLoader) {

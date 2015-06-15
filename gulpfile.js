@@ -1,3 +1,4 @@
+/*global require*/
 var gulp = require('gulp');
 var wrap = require('gulp-wrap');
 var sourcemaps = require('gulp-sourcemaps');
@@ -18,6 +19,7 @@ var WRAP_TEMPLATE = '!function(){\n"use strict";<%= contents %>}();';
 gulp.task('default',['dev'],function(){});
 
 gulp.task('dev', function(){
+    "use strict";
     return gulp.src(SOURCE_FILES)
         .pipe(sourcemaps.init({loadMaps:true}))
         .pipe(concat(DIST_FILE_NAME))

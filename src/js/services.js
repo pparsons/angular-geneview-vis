@@ -1,4 +1,6 @@
-(function(){
+/*global angular, d3*/
+(function () {
+    "use strict";
     angular
         .module('angularGeneviewVis')
         .factory('geneLoader', ['$http', '$rootScope', function($http, $rootScope) {
@@ -21,19 +23,18 @@
                         responseType : 'json',
                         cache: true
                     })
-                        .success(function(data, status, headers, config) {
-                            "use strict";
+                        .success(function (data/*, status, headers, config*/) {
                             cb(data);
                         })
 
                         .error(function(data, status, headers, config){
                             //handle error here
-                            cb({err:"Failed to load genes. Connection failed."});
+                            cb({err: "Failed to load genes. Connection failed."});
                         });
                 }
             };
         }])
-        .factory('geneManager',[function() {
+        .factory('geneManager', [function () {
             /**
              * 2D array to hold current genes
              * genDB[i] = ith track
@@ -68,7 +69,7 @@
                 geneDB[trackNo].push(gene);
 
                 return trackNo;
-            };
+            }
 
             // Process a data set
             // Return sanitized, wrapped data
@@ -77,7 +78,7 @@
 
                 function isBadVar(res) {
                     //console.log(boundTo, boundFrom);
-                    return ((res == null) || (typeof res === 'undefined') || (res == ''));
+                    return ((res === null) || (typeof res === 'undefined') || (res === ''));
                 }
 
                 for (var i = data.length - 1; i >= 0; i--) {
@@ -110,7 +111,7 @@
 
             return {
                 process: process
-            }
+            };
         }])
         .factory('gen2Phen', ['$http', '$rootScope', function ($http, $rootScope) {
             return {
@@ -140,7 +141,7 @@
                         params: searchParams
                     });
                 }
-            }
+            };
         }])
         .factory('articleStatLoader', ['$http', '$rootScope', function($http, $rootScope) {
 
