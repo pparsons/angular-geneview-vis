@@ -27,3 +27,4 @@ gulp.task('dev', function(){
 });
 
 //TODO create task to build minified release file
+//TODO create jasmine test task

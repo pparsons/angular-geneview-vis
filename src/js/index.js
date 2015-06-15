@@ -1,5 +1,6 @@
 
-
-var angularGeneviewVis = angular.module('angularGeneviewVis', []);
-
-angularGeneviewVis.value("version","0.1.2");
+(function() {
+    angular
+        .module('angularGeneviewVis', [])
+        .value("version","0.1.2");
+})();
