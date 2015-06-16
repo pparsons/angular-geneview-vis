@@ -7,9 +7,21 @@
 
             function link(scope, element, attrs, chrAPI) {
 
-                var target, axis, statusBar, statusText, geneTip, divParent,//,articleTarget;
-                    SD_1COL_HEIGHT = 20,
-                    GENES_YSHIFT = 34;
+                var
+                    svgTarget,
+
+                    axis,
+                    statusBar,
+                    statusText,
+                    geneTip,
+
+                    // Immediate div containing target svg
+                    divParent;
+
+                var
+                    // Fixed one unit of height in px
+                    SD_1COL_HEIGHT = 20;
+
 
                 scope.selectorPhenotypes = []; //phenotypes related to a location that is selected
 
@@ -49,7 +61,7 @@
 
                     divParent.select('svg').remove();
 
-                    target = divParent.append('svg')
+                    svgTarget = divParent.append('svg')
                         .attr('height', scope.height)
                         .attr('width', scope.width);
 
@@ -62,7 +74,7 @@
                             return tiptemp;
                         });
 
-                    target.call(geneTip);
+                    svgTarget.call(geneTip);
 
                     drawStatusBar();
                     updateStatusText("Initialized");
@@ -73,7 +85,7 @@
                     //  Average band label width
                     var LABEL_WIDTH = 26;
 
-                    var band = target.append('g')
+                    var band = svgTarget.append('g')
                         .classed('geneview-bands', true)
                         .attr('transform', 'translate(0,' + SD_1COL_HEIGHT + ")")
                         .selectAll('g')
@@ -123,7 +135,7 @@
                 function drawStatusBar() {
 
                     if (scope.showStatus) {
-                        statusBar = target.append('g')
+                        statusBar = svgTarget.append('g')
                             .attr('transform', 'translate(0,' + (scope.height - SD_1COL_HEIGHT) + ")");
 
                         statusBar.append('rect')
@@ -144,7 +156,7 @@
                         .orient('top')
                         .scale(scope.xscale);
 
-                    axis = target.append('g')
+                    axis = svgTarget.append('g')
                         .classed('geneview-scale', true)
                         .attr('transform', 'translate(0,' + SD_1COL_HEIGHT + ")")
                         .call(zmAxis);
@@ -172,7 +184,9 @@
                     //	}
                     //];
 
-                    scope.gene = target.append('g')
+                    var GENES_YSHIFT = 34;
+
+                    scope.gene = svgTarget.append('g')
                         .attr('transform', 'translate(0,' + GENES_YSHIFT +")")
                         .selectAll('g')
                         .data(geneDataSet).enter().append('g');
@@ -212,27 +226,30 @@
 
                 function adjustGeneViewHeight(trackCount) {
                     var yShift = (trackCount + 1) * SD_1COL_HEIGHT + (SD_1COL_HEIGHT * 4);
+                    var PHENOTYPES_HEIGHT = 280;
 
-                    divParent.style('height', yShift + "px");
+                    var actHeight = scope.phenotypes ? yShift + PHENOTYPES_HEIGHT : yShift;
 
-                    target.transition()
-                        .attr('height', yShift);
+                    divParent.style('height', actHeight + "px");
+
+                    svgTarget.transition()
+                        .attr('height', actHeight);
 
                     if (scope.showStatus) {
-                        statusBar.attr('transform', 'translate(0,' + (yShift - SD_1COL_HEIGHT) + ")");
+                        statusBar.attr('transform', 'translate(0,' + (actHeight - SD_1COL_HEIGHT) + ")");
                     }
 
                     var extraShift = scope.showStatus ? 0 : SD_1COL_HEIGHT;
                     var extraShiftInv = scope.showStatus ? SD_1COL_HEIGHT : 0;
                     axis.selectAll('.tick line').attr('y2', yShift + extraShift - (SD_1COL_HEIGHT * 2));
 
-                    target.selectAll('.sensitivityBorders')
+                    svgTarget.selectAll('.sensitivityBorders')
                         .attr('height', yShift - extraShiftInv);
 
                 }
 
                 function drawSensitivityBorders() {
-                    var borders = target.append('g');
+                    var borders = svgTarget.append('g');
 
                     var styleObj = {
                         'fill' : '#666666',
@@ -302,30 +319,32 @@
                 }
 
                 function drawPhenotypes(data) {
-                    phenotypeLoader.load(data).then(function(response) {
 
+                    phenotypeLoader.load(data)
+                        .catch(function (e) {
+                            console.log(e);
+                        })
+                        .then(domDraw);
+
+                    //Apply dom manipulation based on result
+                    function domDraw(response) {
+
+                        //remove empty results from promise resolutions
                         var res = response.filter(function(e){
-                           return typeof e === "object" ? true : false;
+                            return e === null ? false : true;
                         });
 
                         //if there are any phenotypes from OMIM
                         if (res.length > 0) {
 
-                            res.sort(function(a,b){
+                            //sort phenotypes based on the start location of its associated gene
+                            res.sort(function(a,b) {
                                 if (a.start < b.start) { return -1; }
                                 if (a.start > b.start) { return 1; }
                                 return 0;
                             });
 
-                            scope.mappingsO = _.map(res, function(a,key) { var b = {}; b.symbol= a.symbol;b.phenotypes= a.phenotypes; return b;  });
-
-                            //adjust svg size
-                            divParent.style('height', 400 + "px");
-
-                            target.transition()
-                                .attr('height', 400);
-
-                            //TODO calculate height dynamically
+                            console.log(res);
 
                             var startHeight = 200;
 
@@ -336,7 +355,7 @@
                             var t = _.pluck(res, 'phenotypes');
                             var phenotypes = _.pluckDeep(_.flatten(t), 'phenotypeMap.phenotype'); //list of phenotypes
 
-                            var svg = target;
+                            var svg = svgTarget;
 
                             //svg.append("g")
                             //	.attr("transform", "rotate(25)");
@@ -352,7 +371,7 @@
                                     return d;
                                 })
                                 .attr("transform", function(d, i) {
-                                    return "translate(" + ((i * 50) + 30) + "," + (startHeight+10) + ")rotate(25)"
+                                    return "translate(" + ((i * 50) + 30) + "," + (startHeight+10) + ")rotate(25)";
                                 });
 
                             var lineFunction = d3.svg.line()
@@ -372,7 +391,7 @@
                                     //get location of related gene
                                     var geneXVal, geneYVal;
                                     currentPhen = d;
-                                    _.forEach(scope.mappingsO, function(b) {
+                                    _.forEach(res, function(b) {
                                         currentMapping = b;
                                         _.forEach(b.phenotypes, function(c) {
                                             if (c.phenotypeMap.phenotype === currentPhen) {
@@ -389,7 +408,7 @@
                                                 geneYVal = genes[0][0].y.animVal.value + 45; //TODO calculate this properly
                                             }
                                         });
-                                    })
+                                    });
                                     return lineFunction([{'x':(i*50+20),'y':startHeight},{'x':geneXVal,'y':geneYVal}]);
                                 })
                                 .attr("stroke", function(d) {
@@ -441,9 +460,7 @@
                             scope.mappingsL = _.map(scope.g2pL, function(a,key) { var b = {}; b.symbol= a.symbol;b.phenotypes= a.phenotypes; return b;  });
                             var a;
                         }
-                    }).catch(function(e) {
-                        console.log(e);
-                    });
+                    }
 
                 }
 
