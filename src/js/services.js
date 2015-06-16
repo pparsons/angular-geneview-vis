@@ -3,6 +3,7 @@
     "use strict";
     angular
         .module('angularGeneviewVis')
+        //Load genes based on chromosome start and end location
         .factory('geneLoader', ['$http', '$rootScope', function ($http, $rootScope) {
             //this way will work inside the cytoApp
             var serverScriptAddr = $rootScope.server + '/soscip/api/getgenes.php?';
@@ -34,6 +35,8 @@
                 }
             };
         }])
+
+        //Mange gene results; calculate their track to draw
         .factory('geneManager', [function () {
             /**
              * 2D array to hold current genes
@@ -113,6 +116,77 @@
                 process: process
             };
         }])
+
+        //return array of promisses containing phenotype info
+        .factory('phenotypeLoader', ['$q','$http','$rootScope', function($q, $http, $rootScope) {
+            var http = {
+              omim: function (gene) {
+                  return $http({
+                      method: 'get',
+                      url: '//' + $rootScope.server + '/soscip/api/gen2phen.php',
+                      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                      params: {'gene': gene}
+                  });
+              }
+            }
+
+            function loadPhenotypes(data) {
+
+                function makePromiseCall(i) {
+                    return http.omim(data[i].gene.symbol);
+                }
+
+                return function() {
+                    var promises = [];
+                    var resultsData = [];
+                    //loop through each result
+                    for (var i = 0; i < data.length; i++) {
+                        (function () {
+                            var defer = $q.defer();
+
+                            // get associated phenotypes for each
+                            var promise = http.omim(data[i].gene.symbol)
+                                .then(function (res) {
+
+                                    var data = "";
+
+                                    try{
+                                        //if there is a result
+                                        if (res.data.omim.searchResponse.endIndex !== -1) {
+                                            var gene = res.data.omim.searchResponse.entryList[0].entry;
+                                            //if there is a related phenotype(s)
+
+                                            if (typeof gene.geneMap !== 'undefined' && typeof gene.geneMap.phenotypeMapList !== 'undefined') {
+                                                var symbol = gene.matches;
+                                                var phenotypes = gene.geneMap.phenotypeMapList;
+                                                var geneStart = gene.geneMap.chromosomeLocationStart;
+                                                //scope.g2pO.push({'symbol': symbol, 'phenotypes': phenotypes, 'start':geneStart});
+                                                data = {'symbol': symbol, 'phenotypes': phenotypes, 'start':geneStart};
+                                            }
+
+                                        }
+                                    }
+                                    catch(e) {
+                                        defer.resolve("");
+                                    }
+
+                                    defer.resolve(data);
+                                    return defer.promise;
+                                });
+                            promises.push(promise);
+
+                        })(i);
+                    }//end for
+                    return $q.all(promises);
+                }();
+            }
+
+            return {
+                load: loadPhenotypes
+            };
+        }])
+
+        //
         .factory('gen2Phen', ['$http', '$rootScope', function ($http, $rootScope) {
             return {
                 omim: function (gene) {
@@ -143,6 +217,8 @@
                 }
             };
         }])
+
+        //Load article statistics for an array of genes
         .factory('articleStatLoader', ['$http', '$rootScope', function($http, $rootScope) {
 
             return {

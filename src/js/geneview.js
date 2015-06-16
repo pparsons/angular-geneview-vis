@@ -3,7 +3,7 @@
     "use strict";
     angular
         .module('angularGeneviewVis')
-        .directive('geneview', ['geneLoader', 'articleStatLoader', 'geneManager', '$rootScope' /*,'$state'*/, '$q', 'gen2Phen', function (geneLoader, articleStatLoader, geneManager, $rootScope/*,$state*/, $q, gen2Phen) {
+        .directive('geneview', ['geneLoader', 'phenotypeLoader','articleStatLoader', 'geneManager', '$rootScope' /*,'$state'*/, '$q', 'gen2Phen', function (geneLoader,phenotypeLoader, articleStatLoader, geneManager, $rootScope/*,$state*/, $q, gen2Phen) {
 
             function link(scope, element, attrs, chrAPI) {
 
@@ -67,8 +67,6 @@
                     drawStatusBar();
                     updateStatusText("Initialized");
                 };
-
-                //init();
 
                 function drawBands(bands) {
 
@@ -241,9 +239,7 @@
                         'opacity': 0.2
                     };
 
-                    var height = scope.showStatus
-                        ? scope.height - SD_1COL_HEIGHT
-                        : scope.height;
+                    var height = scope.showStatus ? scope.height - SD_1COL_HEIGHT : scope.height;
 
                     var w = scope.xscale(scope.selectorStart) - scope.xscale(scope.boundFrom);
 
@@ -294,7 +290,7 @@
                         }
 
                         var mid = (start + end) / 2;
-                        if (isNaN(mid)) continue;
+                        if (isNaN(mid)) { continue; }
                         res.push({
                             gene: geneSymbol,
                             articleCount: count,
@@ -306,74 +302,22 @@
                 }
 
                 function drawPhenotypes(data) {
-                    var results = function() {
-                        var promises = [];
-                        //loop through each result
-                        for (var i = 0; i < data.length; i++) {
-                            //create closure for promise
-                            (function () {
-                                var defer = $q.defer();
+                    phenotypeLoader.load(data).then(function(response) {
 
-                                // get associated phenotypes for each
-                                var promise = gen2Phen.omim(data[i].gene.symbol)
-                                    .then(function (res) {
+                        var res = response.filter(function(e){
+                           return typeof e === "object" ? true : false;
+                        });
 
-                                        try{
-                                            //if there is a result
-                                            if (res.data.omim.searchResponse.endIndex !== -1) {
-                                                var gene = res.data.omim.searchResponse.entryList[0].entry;
-                                                //if there is a related phenotype(s)
-
-                                                if (typeof gene.geneMap !== 'undefined' && typeof gene.geneMap.phenotypeMapList !== 'undefined') {
-                                                    var symbol = gene.matches;
-                                                    var phenotypes = gene.geneMap.phenotypeMapList;
-                                                    var geneStart = gene.geneMap.chromosomeLocationStart;
-                                                    scope.g2pO.push({'symbol': symbol, 'phenotypes': phenotypes, 'start':geneStart});
-                                                }
-
-                                            }
-                                        }
-                                        catch(e){}
-                                        defer.resolve();
-                                        defer.promise.then(function () {
-                                            var a;
-                                        });
-                                    });
-                                promises.push(promise);
-
-                                //var p2 = gen2Phen.lit(data[i].symbol)
-                                //	.then(function (res) {
-                                //		try{
-                                //			if(res.data.response.docs.length > 0) {
-                                //				var symbol = res.config.params.query;
-                                //				var phenotypes = _.uniq(_.compact(_.flatten(_.pluck(res.data.response.docs,'phenotypes'))));
-                                //				scope.g2pL.push({'symbol': symbol, 'phenotypes': phenotypes});
-                                //			}
-                                //		}catch(e){
-                                //			console.log(e);
-                                //		}
-                                //	});
-
-                                //promises.push(p2);
-                            })(i);
-                        }//end for
-                        return $q.all(promises);
-                    };
-                    results().then(function() {
                         //if there are any phenotypes from OMIM
-                        if (scope.g2pO.length > 0) {
+                        if (res.length > 0) {
 
-                            //console.log("::",scope.g2pO);
-
-                            scope.g2pO.sort(function(a,b){
-                                if (a.start < b.start) return -1;
-                                if (a.start > b.start) return 1;
+                            res.sort(function(a,b){
+                                if (a.start < b.start) { return -1; }
+                                if (a.start > b.start) { return 1; }
                                 return 0;
                             });
 
-                            //console.log("sorted:",scope.g2pO);
-
-                            scope.mappingsO = _.map(scope.g2pO, function(a,key) { var b = {}; b.symbol= a.symbol;b.phenotypes= a.phenotypes; return b;  });
+                            scope.mappingsO = _.map(res, function(a,key) { var b = {}; b.symbol= a.symbol;b.phenotypes= a.phenotypes; return b;  });
 
                             //adjust svg size
                             divParent.style('height', 400 + "px");
@@ -389,7 +333,7 @@
                                 width = 960 - margin.left - margin.right,
                                 height = 200 - margin.top - margin.bottom;
 
-                            var t = _.pluck(scope.g2pO, 'phenotypes');
+                            var t = _.pluck(res, 'phenotypes');
                             var phenotypes = _.pluckDeep(_.flatten(t), 'phenotypeMap.phenotype'); //list of phenotypes
 
                             var svg = target;
@@ -497,6 +441,8 @@
                             scope.mappingsL = _.map(scope.g2pL, function(a,key) { var b = {}; b.symbol= a.symbol;b.phenotypes= a.phenotypes; return b;  });
                             var a;
                         }
+                    }).catch(function(e) {
+                        console.log(e);
                     });
 
                 }
