@@ -223,8 +223,8 @@
                     //.on('mousedown', d3.contextMenu(menu));
                 }
 
-                function adjustGeneViewHeight(trackCount) {
-                    var yShift = (trackCount + 1) * SD_1COL_HEIGHT + (SD_1COL_HEIGHT * 4);
+                function adjustGeneViewHeight(totalGeneTracks) {
+                    var yShift = (totalGeneTracks + 1) * SD_1COL_HEIGHT + (SD_1COL_HEIGHT * 4);
                     var PHENOTYPES_HEIGHT = 280;
 
                     var actHeight = scope.phenotypes ? yShift + PHENOTYPES_HEIGHT : yShift;
@@ -247,6 +247,11 @@
 
                     svgTarget.selectAll('.sensitivityBorders')
                         .attr('height', yShift - extraShiftInv);
+
+                    return {
+                        geneWindowHeight: yShift,
+                        fullSVGHeight: actHeight
+                    }
 
                 }
 
@@ -331,7 +336,7 @@
                     return res;
                 }
 
-                function drawPhenotypes(data) {
+                function drawPhenotypes(data, currentHeights) {
 
                     phenotypeLoader.load(data)
                         .catch(function (e) {
@@ -359,7 +364,7 @@
 
                             console.log(res);
 
-                            var startHeight = 200;
+                            var startHeight = currentHeights.geneWindowHeight + 10;
 
                             var margin = {top: 50, right: 10, bottom: 10, left: 10},
                                 width = 960 - margin.left - margin.right,
@@ -368,10 +373,6 @@
                             var t = _.pluck(res, 'phenotypes');
                             var phenotypes = _.pluckDeep(_.flatten(t), 'phenotypeMap.phenotype'); //list of phenotypes
                             console.log(phenotypes);
-
-
-                            //svg.append("g")
-                            //	.attr("transform", "rotate(25)");
 
                             var names = svgTarget.append("g")
                                 .selectAll('text')
@@ -505,12 +506,10 @@
                                 var maxTrack = d3.max(geneDataSet, function(d) {return d.track; });
 
                                 drawGenes(geneDataSet);
-
+                                var currentHeights = adjustGeneViewHeight(maxTrack);
                                 if(scope.phenotypes) {
-                                    drawPhenotypes(geneDataSet);
+                                    drawPhenotypes(geneDataSet, currentHeights);
                                 }
-
-                                adjustGeneViewHeight(maxTrack);
                                 updateStatusText('Loaded: ' + scope.chr +' [' + scope.boundFrom + " : " + scope.boundTo + '] Results: ' + geneDataSet.length);
 
                                 if (scope.articleStats) {
