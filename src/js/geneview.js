@@ -160,7 +160,6 @@
                         .classed('geneview-scale', true)
                         .attr('transform', 'translate(0,' + SD_1COL_HEIGHT + ")")
                         .call(zmAxis);
-
                 }
 
                 function drawGenes(geneDataSet) {
@@ -242,10 +241,24 @@
                     var extraShift = scope.showStatus ? 0 : SD_1COL_HEIGHT;
                     var extraShiftInv = scope.showStatus ? SD_1COL_HEIGHT : 0;
                     axis.selectAll('.tick line').attr('y2', yShift + extraShift - (SD_1COL_HEIGHT * 2));
+                    svgTarget.select('.barrier-line')
+                        .attr('y1', yShift - SD_1COL_HEIGHT)
+                        .attr('y2', yShift - SD_1COL_HEIGHT);
 
                     svgTarget.selectAll('.sensitivityBorders')
                         .attr('height', yShift - extraShiftInv);
 
+                }
+
+                function drawBarrierLine() {
+                    svgTarget.append('line')
+                        .classed('barrier-line', true)
+                        .attr('x1', 0)
+                        .attr('y1', 0)
+                        .attr('x2', scope.width)
+                        .attr('y2', 0)
+                        .attr('stroke','#d4d4d4')
+                        .attr('stroke-width', 1);
                 }
 
                 function drawSensitivityBorders() {
@@ -354,13 +367,13 @@
 
                             var t = _.pluck(res, 'phenotypes');
                             var phenotypes = _.pluckDeep(_.flatten(t), 'phenotypeMap.phenotype'); //list of phenotypes
+                            console.log(phenotypes);
 
-                            var svg = svgTarget;
 
                             //svg.append("g")
                             //	.attr("transform", "rotate(25)");
 
-                            var names = svg.append("g")
+                            var names = svgTarget.append("g")
                                 .selectAll('text')
                                 .data(phenotypes)
                                 .enter()
@@ -382,7 +395,7 @@
                             var currentPhen = "";
                             var currentMapping = "";
 
-                            var linetest = svg.append("g")
+                            var linetest = svgTarget.append("g")
                                 .selectAll('path')
                                 .data(phenotypes)
                                 .enter()
@@ -427,7 +440,7 @@
                                         .style("opacity", 0.3);
                                 });
 
-                            var circles = svg.append("g")
+                            var circles = svgTarget.append("g")
                                 .selectAll('circle')
                                 .data(phenotypes)
                                 .enter()
@@ -470,6 +483,7 @@
                     if (scope.activeSelection.length > 0) {
                         updateStatusText('Requesting ...');
                         drawScale();
+                        drawBarrierLine();
                         drawBands(scope.activeSelection);
                         drawSensitivityBorders();
                         scope.geneLoadPromise = geneLoader.getGenes(scope.chr, scope.boundFrom , scope.boundTo, function(data) {
