@@ -3,7 +3,7 @@
     "use strict";
     angular
         .module('angularGeneviewVis')
-        .factory('geneLoader', ['$http', '$rootScope', function($http, $rootScope) {
+        .factory('geneLoader', ['$http', '$rootScope', function ($http, $rootScope) {
             //this way will work inside the cytoApp
             var serverScriptAddr = $rootScope.server + '/soscip/api/getgenes.php?';
             return {
@@ -23,11 +23,11 @@
                         responseType : 'json',
                         cache: true
                     })
-                        .success(function (data/*, status, headers, config*/) {
+                        .success(function (data, status, headers, config) {
                             cb(data);
                         })
 
-                        .error(function(data, status, headers, config){
+                        .error(function (data, status, headers, config) {
                             //handle error here
                             cb({err: "Failed to load genes. Connection failed."});
                         });

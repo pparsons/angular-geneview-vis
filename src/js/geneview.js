@@ -1,20 +1,20 @@
-/*global angular, d3*/
+/*global angular, d3, _*/
 (function () {
     "use strict";
     angular
         .module('angularGeneviewVis')
-        .directive('geneview', ['geneLoader','articleStatLoader','geneManager', '$rootScope' /*,'$state'*/, '$q', 'gen2Phen', function(geneLoader,articleStatLoader,geneManager, $rootScope/*,$state*/, $q, gen2Phen) {
+        .directive('geneview', ['geneLoader', 'articleStatLoader', 'geneManager', '$rootScope' /*,'$state'*/, '$q', 'gen2Phen', function (geneLoader, articleStatLoader, geneManager, $rootScope/*,$state*/, $q, gen2Phen) {
 
             function link(scope, element, attrs, chrAPI) {
 
-                var target, axis, statusBar, statusText, geneTip, divParent;//,articleTarget;
-                var SD_1COL_HEIGHT = 20,
+                var target, axis, statusBar, statusText, geneTip, divParent,//,articleTarget;
+                    SD_1COL_HEIGHT = 20,
                     GENES_YSHIFT = 34;
 
                 scope.selectorPhenotypes = []; //phenotypes related to a location that is selected
 
                 //when selector has a new location
-                scope.$on("selector:newLoc", function(e, arg) {
+                scope.$on("selector:newLoc", function (e, arg) {
                     scope.render();
                 });
 
@@ -24,7 +24,8 @@
                     var chrConfigs = chrAPI.getAttrs();
 
                     scope.displayGeneview = true;
-                    scope.articleStats = (scope.articleStats === true) ? true :(scope.articleStats === 'true');
+                    scope.articleStats = (scope.articleStats === true) ? true : (scope.articleStats === 'true');
+                    scope.phenotypes = (scope.phenotypes === true) ? true : (scope.phenotypes === 'true');
                     scope.activeSelection = selectionModel.getSelectedBands().bands;
                     scope.sensitivity = Math.round(selectionModel.getSelectedBands().sensitivity);
                     scope.boundFrom = selectionModel.selStart - scope.sensitivity;
@@ -34,7 +35,7 @@
                     scope.width = chrConfigs.width;
                     scope.chr = chrConfigs.chr;
                     scope.height = 120;
-                    scope.showStatus = (scope.showStatus === true) ? true :(scope.showStatus === 'true');
+                    scope.showStatus = (scope.showStatus === true) ? true : (scope.showStatus === 'true');
                     scope.activeSelector = chrAPI.getActiveSelector();
 
 
@@ -55,12 +56,11 @@
                     geneTip = d3.tip()
                         .attr('class', 'd3-tip')
                         .direction('n')
-                        .offset([-5,0])
-                        .html(function(d) {
-                            var tiptemp = '<div class="gene-tip"><span style="color:#ffb006">' + d.gene.symbol + "</span> <div>"+ d.gene.desc + "</div></div> ";
+                        .offset([-5, 0])
+                        .html(function (d) {
+                            var tiptemp = '<div class="gene-tip"><span style="color:#ffb006">' + d.gene.symbol + "</span> <div>" + d.gene.desc + "</div></div> ";
                             return tiptemp;
-                        }
-                    );
+                        });
 
                     target.call(geneTip);
 
@@ -83,14 +83,14 @@
                         .append('g');
 
                     band.append('rect')
-                        .attr('class', function(d) {
+                        .attr('class', function (d) {
                             return d.type.replace(":", " ");
                         })
-                        .attr('x', function(d){
+                        .attr('x', function (d) {
                             return scope.xscale(+d.start);
                         })
                         .attr('height', SD_1COL_HEIGHT)
-                        .attr('width', function(d) {
+                        .attr('width', function (d) {
                             return scope.xscale(d.end) - scope.xscale(d.start);
                         });
 
@@ -98,27 +98,26 @@
                         .attr('class', function(d) {
                             return d.type.substring(5) + '-text';
                         })
-                        .text(function(d) {
+                        .text(function (d) {
                             var bandw = scope.xscale(d.end) - scope.xscale(d.start);
                             if (bandw < LABEL_WIDTH) {
                                 return "";
                             }
 
-                            return d.id
+                            return d.id;
                         })
-                        .attr('x', function(d) {
+                        .attr('x', function (d) {
 
                             var s = d.start < scope.boundFrom ? scope.boundFrom : d.start;
                             var e = d.end < scope.boundTo ? d.end : scope.boundTo;
                             var mid = s + ((e - s) / 2);
-                            return scope.xscale(mid) - (LABEL_WIDTH/2);
+                            return scope.xscale(mid) - (LABEL_WIDTH / 2);
                         })
                         .attr('y', 13);
                 }
 
                 function updateStatusText(text) {
-                    if (scope.showStatus)
-                    {
+                    if (scope.showStatus) {
                         statusText.text(text);
                     }
                 }
@@ -182,33 +181,33 @@
 
                     scope.gene.append('rect')
                         .classed('gene', true)
-                        .attr('id', function(d) {
+                        .attr('id', function (d) {
                             return 'gene_' + d.gene.symbol;
                         })
                         .attr('height', SD_1COL_HEIGHT / 2)
-                        .attr('x', function(d) {
+                        .attr('x', function (d) {
                             return d3.min([scope.xscale(+d.gene.start), scope.xscale(+d.gene.end)]);
                         })
-                        .attr('y', function(d) {
-                            return (+d.track +1) * (SD_1COL_HEIGHT);
+                        .attr('y', function (d) {
+                            return (+d.track + 1) * SD_1COL_HEIGHT;
                         })
                         //Animate the gene width
                         .attr('width', 0)
                         .transition()
-                        .delay(function (d, i) { return i*10; })
+                        .delay(function (d, i) { return i * 10; })
                         .duration(300)
-                        .attr('width', function(d) {
+                        .attr('width', function (d) {
                             var a = scope.xscale(+d.gene.start) - scope.xscale(+d.gene.end);
                             var b = scope.xscale(+d.gene.end) - scope.xscale(+d.gene.start);
 
-                            var w = d3.max([a,b]);
-                            return w < 1 ? 2: w;
+                            var w = d3.max([a, b]);
+                            return w < 1 ? 2 : w;
                         });
 
-                    scope.gene.append('title').text(function(d){return d.gene.symbol});
+                    scope.gene.append('title').text(function (d) {return d.gene.symbol; });
 
                     scope.gene.on('mouseover', geneTip.show)
-                        .on('mouseout', geneTip.hide)
+                        .on('mouseout', geneTip.hide);
                     //.on('contextmenu', d3.contextMenu(menu))
                     //.on('mousedown', d3.contextMenu(menu));
                 }
@@ -230,7 +229,7 @@
                     axis.selectAll('.tick line').attr('y2', yShift + extraShift - (SD_1COL_HEIGHT * 2));
 
                     target.selectAll('.sensitivityBorders')
-                        .attr('height', yShift - (extraShiftInv));
+                        .attr('height', yShift - extraShiftInv);
 
                 }
 
@@ -259,7 +258,7 @@
 
                     borders.append('rect')
                         .classed('sensitivityBorders', true)
-                        .attr('x', function(){
+                        .attr('x', function () {
                             return (scope.xscale(scope.boundTo) - w);
                         })
                         .attr('y', 0)
@@ -274,9 +273,9 @@
                  * @param genes
                  * @returns {string} e.g ATL;BRCA;PARP8
                  */
-                function extractGeneSymbol(genes){
+                function extractGeneSymbol(genes) {
                     var r = "";
-                    for(var i = 0; i< genes.length; i++) {
+                    for (var i = 0; i < genes.length; i++) {
                         r = r.concat(genes[i].gene.symbol + ";");
                     }
                     r = r.substr(0, r.length - 1);
@@ -445,9 +444,9 @@
                                                 geneXVal = genes[0][0].x.animVal.value + geneWidth/2;
                                                 geneYVal = genes[0][0].y.animVal.value + 45; //TODO calculate this properly
                                             }
-                                        })
+                                        });
                                     })
-                                    return lineFunction([{'x':(i*50+20),'y':startHeight},{'x':geneXVal,'y':geneYVal}])
+                                    return lineFunction([{'x':(i*50+20),'y':startHeight},{'x':geneXVal,'y':geneYVal}]);
                                 })
                                 .attr("stroke", function(d) {
                                     return "steelblue";
@@ -512,8 +511,8 @@
                         drawSensitivityBorders();
                         scope.geneLoadPromise = geneLoader.getGenes(scope.chr, scope.boundFrom , scope.boundTo, function(data) {
 
-                            if (data.length == 0) {
-                                console.log('no data');
+                            if (data.length === 0) {
+                                //console.log('no data');
                                 updateStatusText("No Data");
                                 return;
                             }
@@ -526,10 +525,13 @@
                                 //var geneDataSet = new GeneManager(scope.boundFrom, scope.boundTo).process(data);
                                 var geneDataSet = geneManager.process(data,scope.boundFrom,scope.boundTo);
 
-                                var maxTrack = d3.max(geneDataSet, function(d) {return d.track});
+                                var maxTrack = d3.max(geneDataSet, function(d) {return d.track; });
 
                                 drawGenes(geneDataSet);
-                                drawPhenotypes(geneDataSet);
+
+                                if(scope.phenotypes) {
+                                    drawPhenotypes(geneDataSet);
+                                }
 
                                 adjustGeneViewHeight(maxTrack);
                                 updateStatusText('Loaded: ' + scope.chr +' [' + scope.boundFrom + " : " + scope.boundTo + '] Results: ' + geneDataSet.length);
@@ -549,14 +551,14 @@
                     else {
                         updateStatusText("No active selectors");
                     }
-                }
+                };
 
             }
 
             function controller($scope) {
                 this.getXscale = function() {
                     return $scope.xscale;
-                }
+                };
             }
 
             return {
@@ -567,7 +569,8 @@
                 transclude:true,
                 scope: {
                     showStatus: '@',
-                    articleStats: '@'
+                    articleStats: '@',
+                    phenotypes: '@'
                 },
                 templateUrl: 'src/geneview-template.html'
             };
