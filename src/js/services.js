@@ -132,53 +132,49 @@
 
             function loadPhenotypes(data) {
 
-                function makePromiseCall(i) {
-                    return http.omim(data[i].gene.symbol);
-                }
+                var promises = [];
 
-                return function() {
-                    var promises = [];
-                    var resultsData = [];
-                    //loop through each result
-                    for (var i = 0; i < data.length; i++) {
-                        (function () {
-                            var defer = $q.defer();
+                //loop through each result
+                for (var i = 0; i < data.length; i++) {
+                    (function () {
+                        var defer = $q.defer();
 
-                            // get associated phenotypes for each
-                            var promise = http.omim(data[i].gene.symbol)
-                                .then(function (res) {
+                        // get associated phenotypes for each
+                        var promise = http.omim(data[i].gene.symbol)
+                            .then(function (res) {
 
-                                    var data = "";
+                                //resolve bad data to null
+                                var data = null;
 
-                                    try{
-                                        //if there is a result
-                                        if (res.data.omim.searchResponse.endIndex !== -1) {
-                                            var gene = res.data.omim.searchResponse.entryList[0].entry;
-                                            //if there is a related phenotype(s)
+                                try {
+                                    //if there is a result
+                                    if (res.data.omim.searchResponse.endIndex !== -1) {
+                                        var gene = res.data.omim.searchResponse.entryList[0].entry;
+                                        //if there is a related phenotype(s)
 
-                                            if (typeof gene.geneMap !== 'undefined' && typeof gene.geneMap.phenotypeMapList !== 'undefined') {
-                                                var symbol = gene.matches;
-                                                var phenotypes = gene.geneMap.phenotypeMapList;
-                                                var geneStart = gene.geneMap.chromosomeLocationStart;
-                                                //scope.g2pO.push({'symbol': symbol, 'phenotypes': phenotypes, 'start':geneStart});
-                                                data = {'symbol': symbol, 'phenotypes': phenotypes, 'start':geneStart};
-                                            }
-
+                                        if (typeof gene.geneMap !== 'undefined' && typeof gene.geneMap.phenotypeMapList !== 'undefined') {
+                                            var symbol = gene.matches;
+                                            var phenotypes = gene.geneMap.phenotypeMapList;
+                                            var geneStart = gene.geneMap.chromosomeLocationStart;
+                                            //scope.g2pO.push({'symbol': symbol, 'phenotypes': phenotypes, 'start':geneStart});
+                                            data = {'symbol': symbol, 'phenotypes': phenotypes, 'start': geneStart};
                                         }
-                                    }
-                                    catch(e) {
-                                        defer.resolve("");
-                                    }
 
-                                    defer.resolve(data);
-                                    return defer.promise;
-                                });
-                            promises.push(promise);
+                                    }
+                                }
+                                catch (e) {
+                                    defer.resolve(null);
+                                }
 
-                        })(i);
-                    }//end for
-                    return $q.all(promises);
-                }();
+                                defer.resolve(data);
+                                return defer.promise;
+                            });
+                        promises.push(promise);
+
+                    })(i);
+                }//end for
+                return $q.all(promises);
+
             }
 
             return {
