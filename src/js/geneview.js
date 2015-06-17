@@ -15,8 +15,11 @@
           statusText,
           geneTip,
 
-        // Immediate div containing target svg
+          // Immediate div containing target svg
           divParent,
+
+          //Active dom heights, updated by updateContainerHeights()
+          currentHeights,
 
           geneDB = {};
 
@@ -235,7 +238,7 @@
           });
         }
 
-        function adjustGeneViewHeight(totalGeneTracks) {
+        function updateContainerHeights(totalGeneTracks) {
           var yShift = (totalGeneTracks + 1) * SD_1COL_HEIGHT + (SD_1COL_HEIGHT * 4);
           var PHENOTYPES_HEIGHT = 280;
 
@@ -260,7 +263,7 @@
           svgTarget.selectAll('.sensitivityBorders')
             .attr('height', yShift - extraShiftInv);
 
-          return {
+          currentHeights = {
             geneWindowHeight: yShift,
             fullSVGHeight: actHeight
           };
@@ -350,6 +353,51 @@
           return res;
         }
 
+        function preprocessPhenoData(response) {
+          //remove empty results from promise resolutions
+          var res = response.filter(function (e) {
+            return e === null ? false : true;
+          });
+
+          //if there are any phenotypes from OMIM
+          if (res.length > 0) {
+
+            //console.log(res);
+            //console.log(res);
+            var dataSet = [];
+            for (var i = 0; i < res.length; i++) {
+
+
+              var geneSymbol = res[i].symbol.toUpperCase()
+
+              if (geneDB.hasOwnProperty(geneSymbol)) {
+                dataSet.push(
+                  {
+                    'gene': geneDB[geneSymbol],
+                    'phenotypes': res[i].phenotypes
+                  }
+                );
+              }
+            }
+
+            dataSet = _.uniq(dataSet, function (n) {
+              return n.gene.gene.symbol;
+            });
+
+            dataSet.sort(function (a, b) {
+              if (+a.gene.gene.start < +b.gene.gene.start) {
+                return -1;
+              }
+              if (+a.gene.gene.start > +b.gene.gene.start) {
+                return 1;
+              }
+              return 0;
+            });
+            console.log(dataSet);
+            return dataSet;
+          }
+        }
+
         function drawPhenotypes(data, currentHeights) {
 
           phenotypeLoader.load(data)
@@ -361,149 +409,278 @@
           //Apply dom manipulation based on result
           function domDraw(response) {
 
-            //remove empty results from promise resolutions
-            var res = response.filter(function (e) {
-              return e === null ? false : true;
-            });
+            var data = preprocessPhenoData(response);
 
-            //if there are any phenotypes from OMIM
-            if (res.length > 0) {
+            var phenotypes = svgTarget.append('g')
+              .classed('phenotypes', true)
+              .attr('transform', 'translate(0,' + currentHeights.geneWindowHeight + ")")
+              .selectAll('g')
+              .data(data).enter().append('g');
 
-              //sort phenotypes based on the start location of its associated gene
-              res.sort(function (a, b) {
-                if (a.start < b.start) {
-                  return -1;
-                }
-                if (a.start > b.start) {
-                  return 1;
-                }
-                return 0;
-              });
-
-              console.log(res);
-
-              var startHeight = currentHeights.geneWindowHeight + 10;
-
-              var margin = {top: 50, right: 10, bottom: 10, left: 10},
-                width = 960 - margin.left - margin.right,
-                height = 200 - margin.top - margin.bottom;
-
-              var t = _.pluck(res, 'phenotypes');
-
-              var phenotypes = _.pluckDeep(_.flatten(t), 'phenotypeMap.phenotype'); //list of phenotypes
-              console.log(phenotypes);
-
-              var names = svgTarget.append("g")
-                .selectAll('text')
-                .data(phenotypes)
-                .enter()
-                //.append('g')
-                .append('text')
-                .attr("font-size", "12px")
-                .text(function (d) {
-                  return d;
-                })
-                .attr("transform", function (d, i) {
-                  return "translate(" + ((i * 50) + 30) + "," + (startHeight + 10) + ")rotate(25)";
-                });
-
-              var lineFunction = d3.svg.line()
-                .x(function (d) {
-                  return d.x;
-                })
-                .y(function (d) {
-                  return d.y;
-                })
-                .interpolate("linear");
-
-              var currentPhen = "";
-              var currentMapping = "";
-
-              var linetest = svgTarget.append("g")
-                .selectAll('path')
-                .data(phenotypes)
-                .enter()
-                .append("path")
-                .attr("d", function (d, i) {
-                  //get location of related gene
-                  var geneXVal, geneYVal;
-                  currentPhen = d;
-
-
-                  _.forEach(res, function (b) {
-                    currentMapping = b;
-                    _.forEach(b.phenotypes, function (c) {
-                      if (c.phenotypeMap.phenotype === currentPhen) {
-                        //now we want to get location of gene
-                        var g = currentMapping.symbol; //gene we want
-                        //var se = scope.gene.filter(function(d) {
-                        //	return d.gene.symbol === g;
-                        //})
-                        var genes = d3.selectAll(".gene").filter(function (d) {
-                          return d.gene.symbol.toUpperCase() === g.toUpperCase();
-                        }); //all the gene elements
-                        var geneWidth = genes[0][0].width.animVal.value;
-                        geneXVal = genes[0][0].x.animVal.value + geneWidth / 2;
-                        geneYVal = genes[0][0].y.animVal.value + 45; //TODO calculate this properly
-                      }
-                    });
-                  });
-                  return lineFunction([{'x': (i * 50 + 20), 'y': startHeight}, {'x': geneXVal, 'y': geneYVal}]);
-                })
-                .attr("stroke", function (d) {
-                  return "steelblue";
-                  //TODO encode according to omim type?
-                })
-                .attr("stroke-width", 1)
-                .style("opacity", 0.3)
-                .attr("fill", "none")
-                .on('mouseover', function (d) {
-                  d3.select(this)
-                    .style("opacity", 1);
-                })
-                .on('mouseout', function (d) {
-                  d3.select(this)
-                    .style("opacity", 0.3);
-                });
-
-              var circles = svgTarget.append("g")
-                .selectAll('circle')
-                .data(phenotypes)
-                .enter()
-                .append('circle');
-
-              circles.attr("cx", function (d, i) {
-                return (i * 50) + 20;
-              })
-                .attr("cy", startHeight)
-                .attr("r", 5)
-                .attr("fill", function (d) {
-                  //color according to
-                  if (d.charAt(0) === '{') { //susceptibility
-                    return "#CBBCDC";
-                  }
-                  else if (d.charAt(0) === '?') { //unconfirmed
-                    return "#C1DE77";
-                  }
-                  else if (d.charAt(0) === '[') { //nondisease
-                    return "#83DEC1";
-                  }
-                  else {
-                    return "#E6B273";
-                  }
-                });
+            var totalPhenotypes = 0;
+            for (var i =0; i<data.length;i++) {
+              totalPhenotypes += data[i].phenotypes.length;
             }
+
+            //console.log(totalPhenotypes);
+
+            //ESTIMATED
+            var PX_PER_PHENOTYPE = 59;
+
+            //too many single phenotypes to draw on the screen
+            var overflow = (totalPhenotypes * PX_PER_PHENOTYPE) >= scope.width ? true : false;
+            //console.log('overflow:',overflow);
+            console.log('total', totalPhenotypes)
+            console.log('geneDB', geneDB)
+
+            var lasti = 0;
+
+            console.log(phenotypes);
+
+            function drawPhenotype(d3sel, index, last) {
+
+              var d = this;
+
+              var dgene = svgTarget.select("#gene_"+ this.gene.gene.symbol)[0][0];
+              console.log(this);
+
+
+              var geneX = dgene.x.animVal.value;
+              var geneY = dgene.y.animVal.value;
+              var geneWidth = dgene.width.animVal.value;
+
+              //d3sel.append('text')
+              //  .text(this.phenotypes[0].phenotypeMap.phenotype)
+              //  .attr('transform', function(d) {
+              //    return "translate(" + ((index * 50) + 30) + "," + 50 + ")rotate(25)";
+              //  });
+              var retLast = {};
+
+              var ph = d3sel.append('g')
+                .selectAll('circle').data(d.phenotypes).enter().append('g')
+
+                ph.append('circle')
+                .attr('cx', function(d, i) {
+                  var n = last.circle += 50;
+                  retLast.circle = n;
+
+                  return n;
+                })
+                .attr('cy', 20)
+                .attr('r', 6)
+                .attr('fill', 'steelblue');
+
+              ph.append('text')
+                .text(function(d){
+                  return d.phenotypeMap.phenotype;
+                })
+                .attr('transform', function(){
+                  var n = last.text += 50;
+                  last.text = n;
+                  return "translate(" + n + "," + (30+10) + ")rotate(25)";
+                })
+
+              return retLast;
+            }
+
+            function drawPhenoCluster(d3sel, index, last) {
+              var d = this;
+
+              var dgene = svgTarget.select("#gene_"+ this.gene.gene.symbol)[0][0];
+              console.log(this);
+
+
+              var geneX = dgene.x.animVal.value;
+              var geneY = dgene.y.animVal.value;
+              var geneWidth = dgene.width.animVal.value;
+
+              //d3sel.append('text')
+              //  .text(this.phenotypes[0].phenotypeMap.phenotype)
+              //  .attr('transform', function(d) {
+              //    return "translate(" + ((index * 50) + 30) + "," + 50 + ")rotate(25)";
+              //  });
+              var retLast = {};
+
+              //
+              d3sel.append('circle')
+                .attr('cx', function() {
+                  var n = last.circle += 50;
+                  retLast.circle = n;
+
+                  return n;
+                })
+                .attr('cy', 20)
+                .attr('r', 6)
+                .attr('fill', 'black')
+
+              d3sel.append('text')
+                .text('cluster')
+                .attr('transform', function(){
+                  var n = last.text += 50;
+                  last.text = n;
+                  return "translate(" + n + "," + (30+10) + ")rotate(25)";
+                })
+
+
+
+            }
+            var lastPos = {
+              'circle': 0,
+              'text': 0
+            }
+
+            for(var k = 0; k < phenotypes[0].length; k++) {
+              var d = d3.select(phenotypes[0][k]);
+              //console.log(d.data());
+              var l = d.data()[0].phenotypes.length;
+              if (!overflow || l ===1) {
+                //draw one by one
+                drawPhenotype.call(d.data()[0], d, k, lastPos);
+              } else {
+                //if (d[0].phenotypes.length ==1) lasti =
+                //cluster ones with > 1 phenotypes
+                drawPhenoCluster.call(d.data()[0],d, k, lastPos);
+                console.log('overflow');
+              }
+            }
+
+            //(function(){
+            //  var res = response.filter(function (e) {
+            //    return e === null ? false : true;
+            //  });
+            //  //sort phenotypes based on the start location of its associated gene
+            //  res.sort(function (a, b) {
+            //    if (a.start < b.start) {
+            //      return -1;
+            //    }
+            //    if (a.start > b.start) {
+            //      return 1;
+            //    }
+            //    return 0;
+            //  });
+            //
+            //  //console.log(res);
+            //
+            //  var startHeight = currentHeights.geneWindowHeight + 10;
+            //
+            //  var margin = {top: 50, right: 10, bottom: 10, left: 10},
+            //    width = 960 - margin.left - margin.right,
+            //    height = 200 - margin.top - margin.bottom;
+            //
+            //  var t = _.pluck(res, 'phenotypes');
+            //  var phenotypes = _.pluckDeep(_.flatten(t), 'phenotypeMap.phenotype'); //list of phenotypes
+            //
+            //  var names = svgTarget.append("g")
+            //    .selectAll('text')
+            //    .data(phenotypes)
+            //    .enter()
+            //    //.append('g')
+            //    .append('text')
+            //    .attr("font-size", "12px")
+            //    .text(function (d) {
+            //      return d;
+            //    })
+            //    .attr("transform", function (d, i) {
+            //      return "translate(" + ((i * 50) + 30) + "," + (startHeight + 10) + ")rotate(25)";
+            //    });
+            //
+            //  var lineFunction = d3.svg.line()
+            //    .x(function (d) {
+            //      return d.x;
+            //    })
+            //    .y(function (d) {
+            //      return d.y;
+            //    })
+            //    .interpolate("linear");
+            //
+            //  var currentPhen = "";
+            //  var currentMapping = "";
+            //
+            //  var linetest = svgTarget.append("g")
+            //    .selectAll('path')
+            //    .data(phenotypes)
+            //    .enter()
+            //    .append("path")
+            //    .attr("d", function (d, i) {
+            //      //get location of related gene
+            //      var geneXVal, geneYVal;
+            //      currentPhen = d;
+            //
+            //
+            //      _.forEach(res, function (b) {
+            //        currentMapping = b;
+            //        _.forEach(b.phenotypes, function (c) {
+            //          if (c.phenotypeMap.phenotype === currentPhen) {
+            //            //now we want to get location of gene
+            //            var g = currentMapping.symbol; //gene we want
+            //            //var se = scope.gene.filter(function(d) {
+            //            //	return d.gene.symbol === g;
+            //            //})
+            //            var genes = d3.selectAll(".gene").filter(function (d) {
+            //              return d.gene.symbol.toUpperCase() === g.toUpperCase();
+            //            }); //all the gene elements
+            //            var geneWidth = genes[0][0].width.animVal.value;
+            //            geneXVal = genes[0][0].x.animVal.value + geneWidth / 2;
+            //            geneYVal = genes[0][0].y.animVal.value + 45; //TODO calculate this properly
+            //          }
+            //        });
+            //      });
+            //      return lineFunction([{'x': (i * 50 + 20), 'y': startHeight}, {'x': geneXVal, 'y': geneYVal}]);
+            //    })
+            //    .attr("stroke", function (d) {
+            //      return "steelblue";
+            //      //TODO encode according to omim type?
+            //    })
+            //    .attr("stroke-width", 1)
+            //    .style("opacity", 0.3)
+            //    .attr("fill", "none")
+            //    .on('mouseover', function (d) {
+            //      d3.select(this)
+            //        .style("opacity", 1);
+            //    })
+            //    .on('mouseout', function (d) {
+            //      d3.select(this)
+            //        .style("opacity", 0.3);
+            //    });
+            //
+            //  var circles = svgTarget.append("g")
+            //    .selectAll('circle')
+            //    .data(phenotypes)
+            //    .enter()
+            //    .append('circle');
+            //
+            //  circles.attr("cx", function (d, i) {
+            //    return (i * 50) + 20;
+            //  })
+            //    .attr("cy", startHeight)
+            //    .attr("r", 5)
+            //    .attr("fill", function (d) {
+            //      //color according to
+            //      if (d.charAt(0) === '{') { //susceptibility
+            //        return "#CBBCDC";
+            //      }
+            //      else if (d.charAt(0) === '?') { //unconfirmed
+            //        return "#C1DE77";
+            //      }
+            //      else if (d.charAt(0) === '[') { //nondisease
+            //        return "#83DEC1";
+            //      }
+            //      else {
+            //        return "#E6B273";
+            //      }
+            //    });
+            //})(response);
 
             //if there any phenotypes from the literature
-            if (scope.g2pL.length > 0) {
-              scope.mappingsL = _.map(scope.g2pL, function (a, key) {
-                var b = {};
-                b.symbol = a.symbol;
-                b.phenotypes = a.phenotypes;
-                return b;
-              });
-              var a;
-            }
+            //if (scope.g2pL.length > 0) {
+            //  scope.mappingsL = _.map(scope.g2pL, function (a, key) {
+            //    var b = {};
+            //    b.symbol = a.symbol;
+            //    b.phenotypes = a.phenotypes;
+            //    return b;
+            //  });
+            //  var a;
+            //}
           }
 
         }
@@ -538,7 +715,7 @@
                 });
 
                 drawGenes(geneDataSet);
-                var currentHeights = adjustGeneViewHeight(maxTrack);
+                updateContainerHeights(maxTrack);
                 if (scope.phenotypes) {
                   drawPhenotypes(geneDataSet, currentHeights);
                 }
