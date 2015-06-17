@@ -1,7 +1,6 @@
+describe('a suite', function () {
+  it('contains spec with an expectation', function () {
 
-describe('a suite', function(){
-    it('contains spec with an expectation', function(){
-
-        expect(true).toBe(true);
-    });
+    expect(true).toBe(true);
+  });
 });
