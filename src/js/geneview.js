@@ -393,7 +393,7 @@
               }
               return 0;
             });
-            console.log(dataSet);
+            //console.log(dataSet);
             return dataSet;
           }
         }
@@ -422,124 +422,181 @@
               totalPhenotypes += data[i].phenotypes.length;
             }
 
-            //console.log(totalPhenotypes);
+            console.log('g:',data.length, 'pheno',totalPhenotypes);
 
             //ESTIMATED
             var PX_PER_PHENOTYPE = 59;
 
             //too many single phenotypes to draw on the screen
             var overflow = (totalPhenotypes * PX_PER_PHENOTYPE) >= scope.width ? true : false;
-            //console.log('overflow:',overflow);
-            console.log('total', totalPhenotypes)
-            console.log('geneDB', geneDB)
+
+            //console.log('geneDB', geneDB)
 
             var lasti = 0;
 
-            console.log(phenotypes);
+            //console.log('data',data)
+            //console.log('phenotypes-d3',phenotypes);
 
-            function drawPhenotype(d3sel, index, last) {
+            function drawPhenotype(lastPos, useCluster) {
+              /*jshint validthis: true */
 
-              var d = this;
+              var data = this.datum();
+              console.log(data);
 
-              var dgene = svgTarget.select("#gene_"+ this.gene.gene.symbol)[0][0];
-              console.log(this);
-
-
-              var geneX = dgene.x.animVal.value;
-              var geneY = dgene.y.animVal.value;
-              var geneWidth = dgene.width.animVal.value;
-
-              //d3sel.append('text')
-              //  .text(this.phenotypes[0].phenotypeMap.phenotype)
-              //  .attr('transform', function(d) {
-              //    return "translate(" + ((index * 50) + 30) + "," + 50 + ")rotate(25)";
-              //  });
-              var retLast = {};
-
-              var ph = d3sel.append('g')
-                .selectAll('circle').data(d.phenotypes).enter().append('g')
-
-                ph.append('circle')
-                .attr('cx', function(d, i) {
-                  var n = last.circle += 50;
-                  retLast.circle = n;
-
-                  return n;
-                })
-                .attr('cy', 20)
-                .attr('r', 6)
-                .attr('fill', 'steelblue');
-
-              ph.append('text')
-                .text(function(d){
-                  return d.phenotypeMap.phenotype;
-                })
-                .attr('transform', function(){
-                  var n = last.text += 50;
-                  last.text = n;
-                  return "translate(" + n + "," + (30+10) + ")rotate(25)";
-                })
-
-              return retLast;
-            }
-
-            function drawPhenoCluster(d3sel, index, last) {
-              var d = this;
-
-              var dgene = svgTarget.select("#gene_"+ this.gene.gene.symbol)[0][0];
-              console.log(this);
+              var dgene = svgTarget.select("#gene_"+ data.gene.gene.symbol)[0][0];
+              //console.log(dgene);
 
 
               var geneX = dgene.x.animVal.value;
               var geneY = dgene.y.animVal.value;
               var geneWidth = dgene.width.animVal.value;
 
+              //console.log(geneX, geneY, geneWidth);
+
+
               //d3sel.append('text')
               //  .text(this.phenotypes[0].phenotypeMap.phenotype)
               //  .attr('transform', function(d) {
               //    return "translate(" + ((index * 50) + 30) + "," + 50 + ")rotate(25)";
               //  });
-              var retLast = {};
+              //var retLast = {};
 
+              var margin = {
+                top: 20
+              };
+
+              function appendPhenoText(text, xpos) {
+                this.append('text')
+                  .text(text)
+                  .attr('transform', "translate(" + (xpos + 12) + "," + (margin.top + 15) +")rotate(25)");
+              }
+
+              var xpos = lastPos.xPOS += 50;
+
+              if(useCluster) {
+                this.append('circle')
+                  .attr('fill', '#d4d4d4')
+                  .attr('r', 10)
+                  .attr('cx', xpos)
+                  .attr('cy', margin.top);
+
+                var clusterCountOffset = data.phenotypes.length >= 10 ? 5 : 3;
+
+                this.append('text')
+                  .text(data.phenotypes.length)
+                  .attr('x', xpos - clusterCountOffset)
+                  .attr('y', margin.top + clusterCountOffset);
+
+                appendPhenoText.call(this, data.gene.gene.symbol + ' cluster', xpos);
+
+              } else {
+                this.append('circle')
+                  .attr('fill', function(d) {
+
+                    var p1 = d.phenotypes[0].phenotypeMap.phenotype.charAt(0);
+                    //color according to
+                    if (p1 === '{') { //susceptibility
+                      return "#CBBCDC";
+                    }
+                    else if (p1 === '?') { //unconfirmed
+                      return "#C1DE77";
+                    }
+                    else if (p1 === '[') { //nondisease
+                      return "#83DEC1";
+                    }
+                    else {
+                      return "#E6B273";
+                    }
+                  })
+                  .attr('r', 5)
+                  .attr('cx', xpos)
+                  .attr('cy', margin.top)
+
+                appendPhenoText.call(this, data.phenotypes[0].phenotypeMap.phenotype, xpos);
+              }
+              //var ph = d3sel.append('g')
+              //  .selectAll('circle').data(d.phenotypes).enter().append('g')
               //
-              d3sel.append('circle')
-                .attr('cx', function() {
-                  var n = last.circle += 50;
-                  retLast.circle = n;
-
-                  return n;
-                })
-                .attr('cy', 20)
-                .attr('r', 6)
-                .attr('fill', 'black')
-
-              d3sel.append('text')
-                .text('cluster')
-                .attr('transform', function(){
-                  var n = last.text += 50;
-                  last.text = n;
-                  return "translate(" + n + "," + (30+10) + ")rotate(25)";
-                })
-
-
-
+              //  ph.append('circle')
+              //  .attr('cx', function(d, i) {
+              //    var n = last.circle += 50;
+              //    retLast.circle = n;
+              //
+              //    return n;
+              //  })
+              //  .attr('cy', 20)
+              //  .attr('r', 6)
+              //  .attr('fill', 'steelblue');
+              //
+              //ph.append('text')
+              //  .text(function(d){
+              //    return d.phenotypeMap.phenotype;
+              //  })
+              //  .attr('transform', function(){
+              //    var n = last.text += 50;
+              //    last.text = n;
+              //    return "translate(" + n + "," + (30+10) + ")rotate(25)";
+              //  })
+              //
+              //return retLast;
             }
+
+            //function drawPhenoCluster(d3sel, last, cluster) {
+            //  var d = this;
+            //
+            //  var dgene = svgTarget.select("#gene_"+ this.gene.gene.symbol)[0][0];
+            //  console.log(this);
+            //
+            //
+            //  var geneX = dgene.x.animVal.value;
+            //  var geneY = dgene.y.animVal.value;
+            //  var geneWidth = dgene.width.animVal.value;
+            //
+            //  var retLast = {};
+            //
+            //  //
+            //  d3sel.append('circle')
+            //    .attr('cx', function() {
+            //      var n = last.circle += 50;
+            //      retLast.circle = n;
+            //
+            //      return n;
+            //    })
+            //    .attr('cy', 20)
+            //    .attr('r', 6)
+            //    .attr('fill', 'black')
+            //
+            //  d3sel.append('text')
+            //    .text('cluster')
+            //    .attr('transform', function(){
+            //      var n = last.text += 50;
+            //      last.text = n;
+            //      return "translate(" + n + "," + (30+10) + ")rotate(25)";
+            //    });
+            //
+            //
+            //
+            //}
+
+
             var lastPos = {
               'circle': 0,
-              'text': 0
+              'text': 0,
+              'xPOS': 0
             }
 
+            //Loop per gene of phenotypes
             for(var k = 0; k < phenotypes[0].length; k++) {
               var d = d3.select(phenotypes[0][k]);
-              //console.log(d.data());
-              var l = d.data()[0].phenotypes.length;
-              if (!overflow || l ===1) {
-                //draw one by one
-                drawPhenotype.call(d.data()[0], d, k, lastPos);
+              var totalPhenoTypes = d.data()[0].phenotypes.length;
+
+              if (!overflow || totalPhenoTypes ===1) {
+                //draw in expanded form
+                drawPhenotype.call(d, lastPos, false);
               } else {
-                //if (d[0].phenotypes.length ==1) lasti =
-                //cluster ones with > 1 phenotypes
-                drawPhenoCluster.call(d.data()[0],d, k, lastPos);
+                //draw in a cluster
+                drawPhenotype.call(d, lastPos, true);
+
                 console.log('overflow');
               }
             }
