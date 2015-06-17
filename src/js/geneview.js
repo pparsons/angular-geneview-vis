@@ -387,10 +387,10 @@
 
             dataSet.sort(function (a, b) {
               if (+a.gene.gene.start < +b.gene.gene.start) {
-                return -1;
+                return 1;
               }
               if (+a.gene.gene.start > +b.gene.gene.start) {
-                return 1;
+                return -1;
               }
               return 0;
             });
@@ -476,7 +476,7 @@
 
               if(useCluster) {
                 this.append('circle')
-                  .attr('fill', '#d4d4d4')
+                  .attr('fill', '#666666')
                   .attr('r', 10)
                   .attr('cx', xpos)
                   .attr('cy', margin.top);
@@ -485,6 +485,7 @@
 
                 this.append('text')
                   .text(data.phenotypes.length)
+                  .attr('fill', 'white')
                   .attr('x', xpos - clusterCountOffset)
                   .attr('y', margin.top + clusterCountOffset);
 
@@ -523,7 +524,7 @@
             };
 
             //Loop per gene of phenotypes
-            for(var k = 0; k < phenotypes[0].length; k++) {
+            for(var k = phenotypes[0].length -1; k !== 0; k--) {
               var d = d3.select(phenotypes[0][k]);
               var totalPhenoTypes = d.data()[0].phenotypes.length;
 
