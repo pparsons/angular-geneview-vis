@@ -3,11 +3,6 @@
   "use strict";
   angular
     .module('angularGeneviewVis')
-
-    .factory('dataStore', [function () {
-      var db = {};
-
-    }])
     //Load genes based on chromosome start and end location
     .factory('geneLoader', ['$http', '$rootScope', function ($http, $rootScope) {
       //this way will work inside the cytoApp

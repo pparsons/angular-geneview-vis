@@ -16,7 +16,9 @@
           geneTip,
 
         // Immediate div containing target svg
-          divParent;
+          divParent,
+
+          geneDB = {};
 
         var
         // Fixed one unit of height in px
@@ -185,12 +187,12 @@
 
           var GENES_YSHIFT = 34;
 
-          scope.gene = svgTarget.append('g')
+          var genes = svgTarget.append('g')
             .attr('transform', 'translate(0,' + GENES_YSHIFT + ")")
             .selectAll('g')
             .data(geneDataSet).enter().append('g');
 
-          scope.gene.append('rect')
+          genes.append('rect')
             .classed('gene', true)
             .attr('id', function (d) {
               return 'gene_' + d.gene.symbol;
@@ -217,14 +219,20 @@
               return w < 1 ? 2 : w;
             });
 
-          scope.gene.append('title').text(function (d) {
+          genes.append('title').text(function (d) {
             return d.gene.symbol;
           });
 
-          scope.gene.on('mouseover', geneTip.show)
+          genes.on('mouseover', geneTip.show)
             .on('mouseout', geneTip.hide);
           //.on('contextmenu', d3.contextMenu(menu))
           //.on('mousedown', d3.contextMenu(menu));
+
+
+          //update geneDB
+          genes.each(function(d) {
+            geneDB[d.gene.symbol] = d;
+          });
         }
 
         function adjustGeneViewHeight(totalGeneTracks) {
