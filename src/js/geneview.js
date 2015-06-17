@@ -461,18 +461,37 @@
               function appendPhenoText(text, xpos) {
                 this.append('text')
                   .text(text)
-                  .attr('transform', "translate(" + (xpos + 12) + "," + (margin.top + 15) +")rotate(25)");
+                  .attr('transform', "translate(" + (xpos + 12) + "," + (margin.top + 15) + ")rotate(25)")
+
+                  .on('mouseover', function () {
+                    d3.select(this)
+                      .attr('style', 'cursor: pointer; fill:steelblue;');
+                    lineover();
+                  })
+                  .on('mouseout', function () {
+                    d3.select(this)
+                      .attr('style', 'cursor: default; fill:black;');
+                    lineoff();
+                  });
               }
 
               var xpos = lastPos.xPOS += 50;
 
-              this.append('line')
+              var line = this.append('line')
                 .attr('stroke', '#d4d4d4')
                 .attr('stroke-width', '1')
                 .attr('x1', xpos)
                 .attr('y1', margin.top)
                 .attr('x2', geneX + (geneWidth / 2))
                 .attr('y2', -(currentHeights.geneWindowHeight-SD_1COL_HEIGHT)+GENES_YSHIFT+geneY + 10);
+              
+              function lineover(){
+                line.attr('stroke', 'steelblue');
+              }
+
+              function lineoff(){
+                line.attr('stroke', '#d4d4d4')
+              }
 
               if(useCluster) {
                 this.append('circle')
