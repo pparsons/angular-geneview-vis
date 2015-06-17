@@ -25,7 +25,8 @@
 
         var
         // Fixed one unit of height in px
-          SD_1COL_HEIGHT = 20;
+          SD_1COL_HEIGHT = 20,
+          GENES_YSHIFT = 34;
 
 
         scope.selectorPhenotypes = []; //phenotypes related to a location that is selected
@@ -188,8 +189,6 @@
           //	}
           //];
 
-          var GENES_YSHIFT = 34;
-
           var genes = svgTarget.append('g')
             .attr('transform', 'translate(0,' + GENES_YSHIFT + ")")
             .selectAll('g')
@@ -235,6 +234,7 @@
           //update geneDB
           genes.each(function(d) {
             geneDB[d.gene.symbol] = d;
+            //geneDB[d.gene.symbol].d3Selection = this;
           });
         }
 
@@ -268,6 +268,7 @@
             fullSVGHeight: actHeight
           };
 
+          //console.log(currentHeights)
         }
 
         function drawBarrierLine() {
@@ -413,7 +414,7 @@
 
             var phenotypes = svgTarget.append('g')
               .classed('phenotypes', true)
-              .attr('transform', 'translate(0,' + currentHeights.geneWindowHeight + ")")
+              .attr('transform', 'translate(0,' + (currentHeights.geneWindowHeight - SD_1COL_HEIGHT) + ")")
               .selectAll('g')
               .data(data).enter().append('g');
 
@@ -422,7 +423,7 @@
               totalPhenotypes += data[i].phenotypes.length;
             }
 
-            console.log('g:',data.length, 'pheno',totalPhenotypes);
+            //console.log('g:',data.length, 'pheno',totalPhenotypes);
 
             //ESTIMATED
             var PX_PER_PHENOTYPE = 59;
@@ -441,25 +442,17 @@
               /*jshint validthis: true */
 
               var data = this.datum();
-              console.log(data);
 
-              var dgene = svgTarget.select("#gene_"+ data.gene.gene.symbol)[0][0];
-              //console.log(dgene);
+              //var d3gene = svgTarget.select("#gene_"+ data.gene.gene.symbol)[0][0];
+              //var d3gene = d3.select(geneDB[data.gene.gene.symbol].d3Selection);
+              var d3gene = svgTarget.select("#gene_"+ data.gene.gene.symbol);
+              var geneX = +d3gene.attr('x');
+              var geneY = +d3gene.attr('y');
 
-
-              var geneX = dgene.x.animVal.value;
-              var geneY = dgene.y.animVal.value;
-              var geneWidth = dgene.width.animVal.value;
+              //d3gene.attr('width') returning wrong results for some reason. Manually recalculating width
+              var geneWidth = (+scope.xscale(data.gene.gene.end)) - (+scope.xscale(data.gene.gene.start));
 
               //console.log(geneX, geneY, geneWidth);
-
-
-              //d3sel.append('text')
-              //  .text(this.phenotypes[0].phenotypeMap.phenotype)
-              //  .attr('transform', function(d) {
-              //    return "translate(" + ((index * 50) + 30) + "," + 50 + ")rotate(25)";
-              //  });
-              //var retLast = {};
 
               var margin = {
                 top: 20
@@ -472,6 +465,14 @@
               }
 
               var xpos = lastPos.xPOS += 50;
+
+              this.append('line')
+                .attr('stroke', '#d4d4d4')
+                .attr('stroke-width', '1')
+                .attr('x1', xpos)
+                .attr('y1', margin.top)
+                .attr('x2', geneX + (geneWidth / 2))
+                .attr('y2', -(currentHeights.geneWindowHeight-SD_1COL_HEIGHT)+GENES_YSHIFT+geneY + 10);
 
               if(useCluster) {
                 this.append('circle')
@@ -510,80 +511,16 @@
                   })
                   .attr('r', 5)
                   .attr('cx', xpos)
-                  .attr('cy', margin.top)
+                  .attr('cy', margin.top);
 
                 appendPhenoText.call(this, data.phenotypes[0].phenotypeMap.phenotype, xpos);
               }
-              //var ph = d3sel.append('g')
-              //  .selectAll('circle').data(d.phenotypes).enter().append('g')
-              //
-              //  ph.append('circle')
-              //  .attr('cx', function(d, i) {
-              //    var n = last.circle += 50;
-              //    retLast.circle = n;
-              //
-              //    return n;
-              //  })
-              //  .attr('cy', 20)
-              //  .attr('r', 6)
-              //  .attr('fill', 'steelblue');
-              //
-              //ph.append('text')
-              //  .text(function(d){
-              //    return d.phenotypeMap.phenotype;
-              //  })
-              //  .attr('transform', function(){
-              //    var n = last.text += 50;
-              //    last.text = n;
-              //    return "translate(" + n + "," + (30+10) + ")rotate(25)";
-              //  })
-              //
-              //return retLast;
+
             }
-
-            //function drawPhenoCluster(d3sel, last, cluster) {
-            //  var d = this;
-            //
-            //  var dgene = svgTarget.select("#gene_"+ this.gene.gene.symbol)[0][0];
-            //  console.log(this);
-            //
-            //
-            //  var geneX = dgene.x.animVal.value;
-            //  var geneY = dgene.y.animVal.value;
-            //  var geneWidth = dgene.width.animVal.value;
-            //
-            //  var retLast = {};
-            //
-            //  //
-            //  d3sel.append('circle')
-            //    .attr('cx', function() {
-            //      var n = last.circle += 50;
-            //      retLast.circle = n;
-            //
-            //      return n;
-            //    })
-            //    .attr('cy', 20)
-            //    .attr('r', 6)
-            //    .attr('fill', 'black')
-            //
-            //  d3sel.append('text')
-            //    .text('cluster')
-            //    .attr('transform', function(){
-            //      var n = last.text += 50;
-            //      last.text = n;
-            //      return "translate(" + n + "," + (30+10) + ")rotate(25)";
-            //    });
-            //
-            //
-            //
-            //}
-
 
             var lastPos = {
-              'circle': 0,
-              'text': 0,
-              'xPOS': 0
-            }
+              'xPOS': -30
+            };
 
             //Loop per gene of phenotypes
             for(var k = 0; k < phenotypes[0].length; k++) {
@@ -597,147 +534,8 @@
                 //draw in a cluster
                 drawPhenotype.call(d, lastPos, true);
 
-                console.log('overflow');
               }
             }
-
-            //(function(){
-            //  var res = response.filter(function (e) {
-            //    return e === null ? false : true;
-            //  });
-            //  //sort phenotypes based on the start location of its associated gene
-            //  res.sort(function (a, b) {
-            //    if (a.start < b.start) {
-            //      return -1;
-            //    }
-            //    if (a.start > b.start) {
-            //      return 1;
-            //    }
-            //    return 0;
-            //  });
-            //
-            //  //console.log(res);
-            //
-            //  var startHeight = currentHeights.geneWindowHeight + 10;
-            //
-            //  var margin = {top: 50, right: 10, bottom: 10, left: 10},
-            //    width = 960 - margin.left - margin.right,
-            //    height = 200 - margin.top - margin.bottom;
-            //
-            //  var t = _.pluck(res, 'phenotypes');
-            //  var phenotypes = _.pluckDeep(_.flatten(t), 'phenotypeMap.phenotype'); //list of phenotypes
-            //
-            //  var names = svgTarget.append("g")
-            //    .selectAll('text')
-            //    .data(phenotypes)
-            //    .enter()
-            //    //.append('g')
-            //    .append('text')
-            //    .attr("font-size", "12px")
-            //    .text(function (d) {
-            //      return d;
-            //    })
-            //    .attr("transform", function (d, i) {
-            //      return "translate(" + ((i * 50) + 30) + "," + (startHeight + 10) + ")rotate(25)";
-            //    });
-            //
-            //  var lineFunction = d3.svg.line()
-            //    .x(function (d) {
-            //      return d.x;
-            //    })
-            //    .y(function (d) {
-            //      return d.y;
-            //    })
-            //    .interpolate("linear");
-            //
-            //  var currentPhen = "";
-            //  var currentMapping = "";
-            //
-            //  var linetest = svgTarget.append("g")
-            //    .selectAll('path')
-            //    .data(phenotypes)
-            //    .enter()
-            //    .append("path")
-            //    .attr("d", function (d, i) {
-            //      //get location of related gene
-            //      var geneXVal, geneYVal;
-            //      currentPhen = d;
-            //
-            //
-            //      _.forEach(res, function (b) {
-            //        currentMapping = b;
-            //        _.forEach(b.phenotypes, function (c) {
-            //          if (c.phenotypeMap.phenotype === currentPhen) {
-            //            //now we want to get location of gene
-            //            var g = currentMapping.symbol; //gene we want
-            //            //var se = scope.gene.filter(function(d) {
-            //            //	return d.gene.symbol === g;
-            //            //})
-            //            var genes = d3.selectAll(".gene").filter(function (d) {
-            //              return d.gene.symbol.toUpperCase() === g.toUpperCase();
-            //            }); //all the gene elements
-            //            var geneWidth = genes[0][0].width.animVal.value;
-            //            geneXVal = genes[0][0].x.animVal.value + geneWidth / 2;
-            //            geneYVal = genes[0][0].y.animVal.value + 45; //TODO calculate this properly
-            //          }
-            //        });
-            //      });
-            //      return lineFunction([{'x': (i * 50 + 20), 'y': startHeight}, {'x': geneXVal, 'y': geneYVal}]);
-            //    })
-            //    .attr("stroke", function (d) {
-            //      return "steelblue";
-            //      //TODO encode according to omim type?
-            //    })
-            //    .attr("stroke-width", 1)
-            //    .style("opacity", 0.3)
-            //    .attr("fill", "none")
-            //    .on('mouseover', function (d) {
-            //      d3.select(this)
-            //        .style("opacity", 1);
-            //    })
-            //    .on('mouseout', function (d) {
-            //      d3.select(this)
-            //        .style("opacity", 0.3);
-            //    });
-            //
-            //  var circles = svgTarget.append("g")
-            //    .selectAll('circle')
-            //    .data(phenotypes)
-            //    .enter()
-            //    .append('circle');
-            //
-            //  circles.attr("cx", function (d, i) {
-            //    return (i * 50) + 20;
-            //  })
-            //    .attr("cy", startHeight)
-            //    .attr("r", 5)
-            //    .attr("fill", function (d) {
-            //      //color according to
-            //      if (d.charAt(0) === '{') { //susceptibility
-            //        return "#CBBCDC";
-            //      }
-            //      else if (d.charAt(0) === '?') { //unconfirmed
-            //        return "#C1DE77";
-            //      }
-            //      else if (d.charAt(0) === '[') { //nondisease
-            //        return "#83DEC1";
-            //      }
-            //      else {
-            //        return "#E6B273";
-            //      }
-            //    });
-            //})(response);
-
-            //if there any phenotypes from the literature
-            //if (scope.g2pL.length > 0) {
-            //  scope.mappingsL = _.map(scope.g2pL, function (a, key) {
-            //    var b = {};
-            //    b.symbol = a.symbol;
-            //    b.phenotypes = a.phenotypes;
-            //    return b;
-            //  });
-            //  var a;
-            //}
           }
 
         }
