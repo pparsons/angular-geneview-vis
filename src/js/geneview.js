@@ -14,6 +14,7 @@
           statusBar,
           statusText,
           geneTip,
+          phenoTip,
 
           // Immediate div containing target svg
           divParent,
@@ -80,7 +81,25 @@
               return tiptemp;
             });
 
+          phenoTip = d3.tip()
+            .attr('class', 'd3-tip')
+            .direction('w')
+            .offset([-18,-30])
+            .html(function(d){
+              //console.log(d);
+              var phenotypes = d.phenotypes;
+              //phenotypes[i].phenotypeMap.phenotype
+              var t = '';
+              phenotypes.forEach(function(v, i) {
+                t+= '<div>'+ (++i) +'. '+ v.phenotypeMap.phenotype + '</div>';
+
+              })
+
+              return t;
+            });
+
           svgTarget.call(geneTip);
+          svgTarget.call(phenoTip);
 
           drawStatusBar();
           updateStatusText("Initialized");
@@ -432,9 +451,6 @@
             var overflow = (totalPhenotypes * PX_PER_PHENOTYPE) >= scope.width ? true : false;
 
             //console.log('geneDB', geneDB)
-
-            var lasti = 0;
-
             //console.log('data',data)
             //console.log('phenotypes-d3',phenotypes);
 
@@ -458,21 +474,30 @@
                 top: 20
               };
 
-              function appendPhenoText(text, xpos) {
+              function appendPhenoText(text, xpos, cluster) {
                 this.append('text')
                   .text(text)
                   .attr('transform', "translate(" + (xpos + 12) + "," + (margin.top + 15) + ")rotate(25)")
 
-                  .on('mouseover', function () {
+                  .on('mouseover', function (d) {
                     d3.select(this)
                       .attr('style', 'cursor: pointer; fill:steelblue;');
                     lineover();
+
+                    if(cluster) {
+                      phenoTip.show(d);
+                    }
                   })
                   .on('mouseout', function () {
                     d3.select(this)
                       .attr('style', 'cursor: default; fill:black;');
                     lineoff();
+
+
+                    phenoTip.hide();
+
                   });
+
               }
 
               var xpos = lastPos.xPOS += 50;
@@ -484,13 +509,13 @@
                 .attr('y1', margin.top)
                 .attr('x2', geneX + (geneWidth / 2))
                 .attr('y2', -(currentHeights.geneWindowHeight-SD_1COL_HEIGHT)+GENES_YSHIFT+geneY + 10);
-              
+
               function lineover(){
                 line.attr('stroke', 'steelblue');
               }
 
               function lineoff(){
-                line.attr('stroke', '#d4d4d4')
+                line.attr('stroke', '#d4d4d4');
               }
 
               if(useCluster) {
@@ -506,9 +531,9 @@
                   .text(data.phenotypes.length)
                   .attr('fill', 'white')
                   .attr('x', xpos - clusterCountOffset)
-                  .attr('y', margin.top + clusterCountOffset);
+                  .attr('y', margin.top + clusterCountOffset)
 
-                appendPhenoText.call(this, data.gene.gene.symbol + ' cluster', xpos);
+                appendPhenoText.call(this, data.gene.gene.symbol + ' cluster', xpos, true);
 
               } else {
                 this.append('circle')
@@ -533,7 +558,7 @@
                   .attr('cx', xpos)
                   .attr('cy', margin.top);
 
-                appendPhenoText.call(this, data.phenotypes[0].phenotypeMap.phenotype, xpos);
+                appendPhenoText.call(this, data.phenotypes[0].phenotypeMap.phenotype, xpos, false);
               }
 
             }
