@@ -1,3 +1,6 @@
 
 bower_components/*
 .idea/*
+npm-debug.log
+node_modules/*
+*.map
