@@ -1,4 +1,4 @@
-/*global angular, d3, _*/
+/*global angular, d3, _, console*/
 (function () {
   "use strict";
   angular
@@ -93,7 +93,7 @@
               phenotypes.forEach(function(v, i) {
                 t+= '<div>'+ (++i) +'. '+ v.phenotypeMap.phenotype + '</div>';
 
-              })
+              });
 
               return t;
             });
@@ -387,8 +387,7 @@
             var dataSet = [];
             for (var i = 0; i < res.length; i++) {
 
-
-              var geneSymbol = res[i].symbol.toUpperCase()
+              var geneSymbol = res[i].symbol.toUpperCase();
 
               if (geneDB.hasOwnProperty(geneSymbol)) {
                 dataSet.push(
@@ -533,7 +532,7 @@
                   .text(data.phenotypes.length)
                   .attr('fill', 'white')
                   .attr('x', xpos - clusterCountOffset)
-                  .attr('y', margin.top + clusterCountOffset)
+                  .attr('y', margin.top + clusterCountOffset);
 
                 appendPhenoText.call(this, data.gene.gene.symbol + ' cluster', xpos, true);
 
@@ -586,7 +585,7 @@
           }
 
         }
-        
+
         //Create unique callid for each http request.
         //This avoids a race condition where two or more requests are made at the same time,
         //and multiple results are drawn incorrectly / overlapping
@@ -598,9 +597,13 @@
         }
 
         scope.render = function () {
+
           scope.selectorPhenotypes = [];
+
           init();
+
           if (scope.activeSelection.length > 0) {
+
             updateStatusText('Requesting ...');
             drawScale();
             drawBarrierLine();
@@ -620,9 +623,6 @@
                 updateStatusText("No Data");
                 return;
               }
-
-              scope.g2pO = []; //for omim
-              scope.g2pL = []; //for literature
 
               if (typeof data.err === 'undefined') {
 
@@ -661,6 +661,7 @@
       }
 
       function controller($scope) {
+        /*jshint validthis:true */
         this.getXscale = function () {
           return $scope.xscale;
         };

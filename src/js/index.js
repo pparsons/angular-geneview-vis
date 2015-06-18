@@ -3,5 +3,5 @@
   "use strict";
   angular
     .module('angularGeneviewVis', [])
-    .value("version", "0.2.0");
+    .value("version", "0.2.1");
 }());

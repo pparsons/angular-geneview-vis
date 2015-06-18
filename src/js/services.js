@@ -79,7 +79,7 @@
       function process(data, boundFrom, boundTo) {
 
         //reset cache from previous calls 
-        if(geneDB.length != 0) { geneDB.length = 0; }
+        if(geneDB.length !== 0) { geneDB.length = 0; }
 
         var sanData = [];
 
