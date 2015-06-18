@@ -170,6 +170,7 @@
 
             statusBar.append('rect')
               .classed('geneview-statusbar', true)
+              .attr('fill', '#ededed')
               .attr('width', scope.width)
               .attr('height', SD_1COL_HEIGHT);
 
