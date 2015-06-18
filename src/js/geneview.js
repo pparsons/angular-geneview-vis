@@ -151,9 +151,14 @@
             .attr('y', 13);
         }
 
-        function updateStatusText(text) {
+        function updateStatusText(text, append) {
           if (scope.showStatus) {
-            statusText.text(text);
+            if(append) {
+              var prev = statusText.text();
+              statusText.text(prev + text);
+            } else {
+              statusText.text(text);
+            }
           }
         }
 
@@ -419,6 +424,7 @@
         }
 
         function drawPhenotypes(data, currentHeights) {
+          var totalPhenotypes = 0;
 
           phenotypeLoader.load(data)
             .catch(function (e) {
@@ -438,8 +444,6 @@
               .append('g')
               .classed('phenotype', true);
 
-
-            var totalPhenotypes = 0;
             for (var i =0; i<data.length;i++) {
               totalPhenotypes += data[i].phenotypes.length;
             }
@@ -594,8 +598,9 @@
 
               }
             }
-          }
 
+            updateStatusText(' Phenotypes: ' + totalPhenotypes, true);
+          }
         }
 
         //Create unique callid for each http request.
@@ -616,7 +621,7 @@
 
           if (scope.activeSelection.length > 0) {
 
-            updateStatusText('Requesting ...');
+            updateStatusText('Requesting ...', false);
             drawScale();
             drawBarrierLine();
             drawBands(scope.activeSelection);
@@ -632,7 +637,7 @@
 
               if (data.length === 0) {
                 //console.log('no data');
-                updateStatusText("No Data");
+                updateStatusText("No Data", false);
                 return;
               }
 
@@ -650,7 +655,8 @@
                 if (scope.phenotypes) {
                   drawPhenotypes(geneDataSet, currentHeights);
                 }
-                updateStatusText('Loaded: ' + scope.chr + ' [' + scope.boundFrom + " : " + scope.boundTo + '] Results: ' + geneDataSet.length);
+
+                updateStatusText('Loaded: CHR:' + scope.chr + ' [' + scope.boundFrom + ": " + scope.boundTo + '] Genes: ' + geneDataSet.length);
 
                 if (scope.articleStats) {
                   articleStatLoader.getArticleCount(extractGeneSymbol(geneDataSet), function (aCount) {
