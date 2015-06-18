@@ -77,6 +77,10 @@
       // Process a data set
       // Return sanitized, wrapped data
       function process(data, boundFrom, boundTo) {
+
+        //reset cache from previous calls 
+        if(geneDB.length != 0) { geneDB.length = 0; }
+
         var sanData = [];
 
         function isBadVar(res) {
