@@ -75,7 +75,7 @@
           geneTip = d3.tip()
             .attr('class', 'd3-tip')
             .direction('n')
-            .offset([-5, 0])
+            .offset([-8, 0])
             .html(function (d) {
               var tiptemp = '<div class="gene-tip"><span style="color:#ffb006">' + d.gene.symbol + "</span> <div>" + d.gene.desc + "</div></div> ";
               return tiptemp;
@@ -248,7 +248,6 @@
             .on('mouseout', geneTip.hide);
           //.on('contextmenu', d3.contextMenu(menu))
           //.on('mousedown', d3.contextMenu(menu));
-
 
           //update geneDB
           genes.each(function(d) {
@@ -476,6 +475,10 @@
               };
 
               function appendPhenoText(text, xpos, cluster) {
+
+                var geneData = this.datum().gene;
+                var domgene = svgTarget.select('#gene_' + geneData.gene.symbol)[0][0];
+
                 this.append('text')
                   .text(text)
                   .attr('transform', "translate(" + (xpos + 12) + "," + (margin.top + 15) + ")rotate(25)")
@@ -488,14 +491,17 @@
                     if(cluster) {
                       phenoTip.show(d);
                     }
+
+                    geneTip.show(geneData, domgene);
+
                   })
                   .on('mouseout', function () {
                     d3.select(this)
                       .attr('style', 'cursor: default; fill:black;');
                     lineoff();
-
-
                     phenoTip.hide();
+
+                    geneTip.hide(geneData, domgene);
 
                   });
 
@@ -511,11 +517,11 @@
                 .attr('x2', geneX + (geneWidth / 2))
                 .attr('y2', -(currentHeights.geneWindowHeight-SD_1COL_HEIGHT)+GENES_YSHIFT+geneY + 10);
 
-              function lineover(){
+              function lineover() {
                 line.attr('stroke', 'steelblue');
               }
 
-              function lineoff(){
+              function lineoff() {
                 line.attr('stroke', '#d4d4d4');
               }
 
