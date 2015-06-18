@@ -8,7 +8,7 @@
       //this way will work inside the cytoApp
       var serverScriptAddr = $rootScope.server + '/soscip/api/getgenes.php?';
       return {
-        getGenes: function (chr, start, stop, cb) {
+        getGenes: function (chr, start, stop, callID, cb) {
           //var url = serverScriptAddr + 'chr=' + chr + '&start=' + start + '&stop=' + stop;
 
           var params = {
@@ -25,7 +25,7 @@
             cache: true
           })
             .success(function (data, status, headers, config) {
-              cb(data);
+              cb(data, callID.id);
             })
 
             .error(function (data, status, headers, config) {

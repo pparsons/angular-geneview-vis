@@ -432,10 +432,12 @@
             var data = preprocessPhenoData(response);
 
             var phenotypes = svgTarget.append('g')
-              .classed('phenotypes', true)
               .attr('transform', 'translate(0,' + (currentHeights.geneWindowHeight - SD_1COL_HEIGHT) + ")")
               .selectAll('g')
-              .data(data).enter().append('g');
+              .data(data).enter()
+              .append('g')
+              .classed('phenotype', true);
+
 
             var totalPhenotypes = 0;
             for (var i =0; i<data.length;i++) {
@@ -584,6 +586,16 @@
           }
 
         }
+        
+        //Create unique callid for each http request.
+        //This avoids a race condition where two or more requests are made at the same time,
+        //and multiple results are drawn incorrectly / overlapping
+        var calls = 0;
+        var newestCallID = 0;
+
+        function CallID (id) {
+          this.id = id;
+        }
 
         scope.render = function () {
           scope.selectorPhenotypes = [];
@@ -594,7 +606,14 @@
             drawBarrierLine();
             drawBands(scope.activeSelection);
             drawSensitivityBorders();
-            scope.geneLoadPromise = geneLoader.getGenes(scope.chr, scope.boundFrom, scope.boundTo, function (data) {
+
+            var callid = new CallID(++calls);
+            scope.geneLoadPromise = geneLoader.getGenes(scope.chr, scope.boundFrom, scope.boundTo, callid, function (data, id) {
+
+              //Old request call detected, abort drawing
+              if(id < newestCallID) {
+                return;
+              }
 
               if (data.length === 0) {
                 //console.log('no data');
@@ -632,6 +651,7 @@
                 updateStatusText(data.err);
               }
             });
+            newestCallID = callid.id;
           }
           else {
             updateStatusText("No active selectors");
