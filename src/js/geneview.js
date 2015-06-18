@@ -244,7 +244,9 @@
             return d.gene.symbol;
           });
 
-          genes.on('mouseover', geneTip.show)
+          genes.on('mouseover', function(d) {
+            geneTip.show(d, this);
+          })
             .on('mouseout', geneTip.hide);
           //.on('contextmenu', d3.contextMenu(menu))
           //.on('mousedown', d3.contextMenu(menu));
