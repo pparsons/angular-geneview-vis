@@ -576,6 +576,10 @@
               'xPOS': -30
             };
 
+            if (!overflow) {
+              lastPos.xPOS = (scope.width - (totalPhenotypes * PX_PER_PHENOTYPE)) / 2;
+            }
+
             //Loop per gene of phenotypes
             for(var k = phenotypes[0].length -1; k !== 0; k--) {
               var d = d3.select(phenotypes[0][k]);
