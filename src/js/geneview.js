@@ -437,6 +437,7 @@
           function domDraw(response) {
 
             var data = preprocessPhenoData(response);
+            //console.log(data);
 
             var phenotypes = svgTarget.append('g')
               .attr('transform', 'translate(0,' + (currentHeights.geneWindowHeight - SD_1COL_HEIGHT) + ")")
@@ -445,11 +446,9 @@
               .append('g')
               .classed('phenotype', true);
 
-            for (var i =0; i<data.length;i++) {
+            for (var i =0; i < data.length;i++) {
               totalPhenotypes += data[i].phenotypes.length;
             }
-
-            //console.log('g:',data.length, 'pheno',totalPhenotypes);
 
             //ESTIMATED
             var PX_PER_PHENOTYPE = 59;
@@ -457,124 +456,142 @@
             //too many single phenotypes to draw on the screen
             var overflow = (totalPhenotypes * PX_PER_PHENOTYPE) >= scope.width ? true : false;
 
-            //console.log('geneDB', geneDB)
-            //console.log('data',data)
-            //console.log('phenotypes-d3',phenotypes);
-
             function drawPhenotype(lastPos, useCluster) {
               /*jshint validthis: true */
 
               var data = this.datum();
 
-              //var d3gene = svgTarget.select("#gene_"+ data.gene.gene.symbol)[0][0];
-              //var d3gene = d3.select(geneDB[data.gene.gene.symbol].d3Selection);
               var d3gene = svgTarget.select("#gene_"+ data.gene.gene.symbol);
               var geneX = +d3gene.attr('x');
               var geneY = +d3gene.attr('y');
 
-              //d3gene.attr('width') returning wrong results for some reason. Manually recalculating width
               var geneWidth = (+scope.xscale(data.gene.gene.end)) - (+scope.xscale(data.gene.gene.start));
-
-              //console.log(geneX, geneY, geneWidth);
 
               var margin = {
                 top: 20
               };
 
-              function appendPhenoText(text, xpos, cluster) {
+              var lineCache = [];
+
+              var xpos;
+              function appendPhenoText(text, i, xpos, cluster) {
 
                 var geneData = this.datum().gene;
                 var domgene = svgTarget.select('#gene_' + geneData.gene.symbol)[0][0];
+
+
+                function blackText() {
+                  d3.select(this)
+                    .attr('style', 'cursor: default; fill:black;');
+                }
+
+                function highlightText() {
+                  d3.select(this)
+                    .attr('style', 'cursor: pointer; fill:steelblue;');
+                }
+
+                function hideDetails(i) {
+
+                  phenoTip.hide();
+                  geneTip.hide(geneData, domgene);
+                  blackText.call(this);
+                  lineCache[i].attr('stroke', '#d4d4d4');
+                }
+
+                function showDetails(d, i) {
+                  console.log('lcache-sd', lineCache);
+                  lineCache[i].attr('stroke', 'steelblue');
+
+                  highlightText.call(this);
+
+                  if(cluster) {
+                    phenoTip.show(d);
+                  }
+
+                  geneTip.show(geneData, domgene);
+                }
 
                 this.append('text')
                   .text(text)
                   .attr('transform', "translate(" + (xpos + 12) + "," + (margin.top + 15) + ")rotate(25)")
 
                   .on('mouseover', function (d) {
-                    d3.select(this)
-                      .attr('style', 'cursor: pointer; fill:steelblue;');
-                    lineover();
-
-                    if(cluster) {
-                      phenoTip.show(d);
-                    }
-
-                    geneTip.show(geneData, domgene);
-
+                    showDetails.call(this, d, i);
                   })
                   .on('mouseout', function () {
-                    d3.select(this)
-                      .attr('style', 'cursor: default; fill:black;');
-                    lineoff();
-                    phenoTip.hide();
-
-                    geneTip.hide(geneData, domgene);
-
+                    hideDetails.call(this, i);
                   });
 
               }
 
-              var xpos = lastPos.xPOS += 50;
-
-              var line = this.append('line')
-                .attr('stroke', '#d4d4d4')
-                .attr('stroke-width', '1')
-                .attr('x1', xpos)
-                .attr('y1', margin.top)
-                .attr('x2', geneX + (geneWidth / 2))
-                .attr('y2', -(currentHeights.geneWindowHeight-SD_1COL_HEIGHT)+GENES_YSHIFT+geneY + 10);
-
-              function lineover() {
-                line.attr('stroke', 'steelblue');
+              function drawline() {
+                return this.append('line')
+                  .attr('stroke', '#d4d4d4')
+                  .attr('stroke-width', '1')
+                  .attr('x1', xpos)
+                  .attr('y1', margin.top)
+                  .attr('x2', geneX + (geneWidth / 2))
+                  .attr('y2', -(currentHeights.geneWindowHeight-SD_1COL_HEIGHT)+GENES_YSHIFT+geneY + 10);
               }
 
-              function lineoff() {
-                line.attr('stroke', '#d4d4d4');
-              }
+              if (useCluster) {
+                xpos = lastPos.xPOS += 50;
 
-              if(useCluster) {
+                lineCache.push(drawline.call(this));
+                console.log('lcache', lineCache);
+
                 this.append('circle')
-                  .attr('fill', '#666666')
-                  .attr('r', 10)
-                  .attr('cx', xpos)
-                  .attr('cy', margin.top);
+                    .attr('fill', '#666666')
+                    .attr('r', 10)
+                    .attr('cx', xpos)
+                    .attr('cy', margin.top);
 
-                var clusterCountOffset = data.phenotypes.length >= 10 ? 5 : 3;
+                  var clusterCountOffset = data.phenotypes.length >= 10 ? 5 : 3;
 
-                this.append('text')
-                  .text(data.phenotypes.length)
-                  .attr('fill', 'white')
-                  .attr('x', xpos - clusterCountOffset)
-                  .attr('y', margin.top + clusterCountOffset);
+                  this.append('text')
+                    .text(data.phenotypes.length)
+                    .attr('fill', 'white')
+                    .attr('x', xpos - clusterCountOffset)
+                    .attr('y', margin.top + clusterCountOffset);
 
-                appendPhenoText.call(this, data.gene.gene.symbol + ' cluster', xpos, true);
+                  appendPhenoText.call(this, data.gene.gene.symbol + ' cluster', 0, xpos, true);
 
               } else {
-                this.append('circle')
-                  .attr('fill', function(d) {
 
-                    var p1 = d.phenotypes[0].phenotypeMap.phenotype.charAt(0);
-                    //color according to
-                    if (p1 === '{') { //susceptibility
-                      return "#CBBCDC";
-                    }
-                    else if (p1 === '?') { //unconfirmed
-                      return "#C1DE77";
-                    }
-                    else if (p1 === '[') { //nondisease
-                      return "#83DEC1";
-                    }
-                    else {
-                      return "#E6B273";
-                    }
-                  })
-                  .attr('r', 5)
-                  .attr('cx', xpos)
-                  .attr('cy', margin.top);
+                for(var i = 0; i < data.phenotypes.length; i++) {
 
-                appendPhenoText.call(this, data.phenotypes[0].phenotypeMap.phenotype, xpos, false);
+                  var p = data.phenotypes[i].phenotypeMap;
+
+                  xpos = lastPos.xPOS += 50;
+
+                  lineCache.push(drawline.call(this));
+
+                  this.append('circle')
+                    .attr('fill', function(d) {
+
+
+                      var p1 = d.phenotypes[i].phenotypeMap.phenotype.charAt(0);
+                      //color according to
+                      if (p1 === '{') { //susceptibility
+                        return "#CBBCDC";
+                      }
+                      else if (p1 === '?') { //unconfirmed
+                        return "#C1DE77";
+                      }
+                      else if (p1 === '[') { //nondisease
+                        return "#83DEC1";
+                      }
+                      else {
+                        return "#E6B273";
+                      }
+                    })
+                    .attr('r', 5)
+                    .attr('cx', xpos)
+                    .attr('cy', margin.top);
+
+                  appendPhenoText.call(this, data.phenotypes[i].phenotypeMap.phenotype, i, xpos, false);
+                }
               }
-
             }
 
             var lastPos = {
@@ -583,12 +600,14 @@
 
             if (!overflow) {
               lastPos.xPOS = (scope.width - (totalPhenotypes * PX_PER_PHENOTYPE)) / 2;
+            } else {
+              //
             }
 
             //Loop per gene of phenotypes
-            for(var k = phenotypes[0].length -1; k !== 0; k--) {
+            for(var k = phenotypes[0].length -1; k >= 0; k--) {
               var d = d3.select(phenotypes[0][k]);
-              var totalPhenoTypes = d.data()[0].phenotypes.length;
+              var totalPhenoTypes = d.datum().phenotypes.length;
 
               if (!overflow || totalPhenoTypes ===1) {
                 //draw in expanded form
