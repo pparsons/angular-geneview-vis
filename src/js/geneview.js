@@ -10,6 +10,10 @@
         var
           svgTarget,
 
+          //Barrier lines to separate components
+          geneline,
+          detailLine,
+
           axis,
           statusBar,
           statusText,
@@ -28,7 +32,8 @@
         // Fixed one unit of height in px
           SD_1COL_HEIGHT = 20,
           GENES_YSHIFT = 34,
-          PHENOTYPES_HEIGHT = 225;
+          PHENOTYPES_HEIGHT = 225,
+          DETAIL_WIN_HEIGHT = 130;
 
         //when selector has a new location
         scope.$on("selector:newLoc", function (e, arg) {
@@ -261,12 +266,18 @@
             geneDB[d.gene.symbol] = d;
             //geneDB[d.gene.symbol].d3Selection = this;
           });
+
+          geneline = drawBarrierLine.call(svgTarget, 0);
         }
 
         function updateContainerHeights(totalGeneTracks) {
           var yShift = (totalGeneTracks + 1) * SD_1COL_HEIGHT + (SD_1COL_HEIGHT * 4);
 
           var actHeight = scope.phenotypes ? yShift + PHENOTYPES_HEIGHT : yShift;
+
+          if(scope.detailWindow) {
+            actHeight += DETAIL_WIN_HEIGHT;
+          }
 
           divParent.style('height', actHeight + "px");
 
@@ -280,9 +291,22 @@
           var extraShift = scope.showStatus ? 0 : SD_1COL_HEIGHT;
           var extraShiftInv = scope.showStatus ? SD_1COL_HEIGHT : 0;
           axis.selectAll('.tick line').attr('y2', yShift + extraShift - (SD_1COL_HEIGHT * 2));
-          svgTarget.select('.barrier-line')
-            .attr('y1', yShift - SD_1COL_HEIGHT)
-            .attr('y2', yShift - SD_1COL_HEIGHT);
+
+          function updateBarrierLines(y) {
+
+            if(this !== undefined) {
+              console.log(y)
+              this.attr('y1', y);
+              this.attr('y2', y);
+            }
+          }
+
+          updateBarrierLines.call(geneline, yShift - SD_1COL_HEIGHT);
+
+          if(scope.detailWindow) {
+            console.log('dw');
+            updateBarrierLines.call(detailLine, actHeight - DETAIL_WIN_HEIGHT);
+          }
 
           svgTarget.selectAll('.sensitivityBorders')
             .attr('height', yShift - extraShiftInv);
@@ -295,13 +319,12 @@
           //console.log(currentHeights)
         }
 
-        function drawBarrierLine() {
-          svgTarget.append('line')
-            .classed('barrier-line', true)
+        function drawBarrierLine(ycoord) {
+          return this.append('line')
             .attr('x1', 0)
-            .attr('y1', 0)
+            .attr('y1', ycoord)
             .attr('x2', scope.width)
-            .attr('y2', 0)
+            .attr('y2', ycoord)
             .attr('stroke', '#d4d4d4')
             .attr('stroke-width', 1);
         }
@@ -530,12 +553,7 @@
                   .attr('x1', xpos)
                   .attr('y1', margin.top)
                   .attr('x2', geneX + (geneWidth / 2))
-                  .attr('y2', -(currentHeights.geneWindowHeight-SD_1COL_HEIGHT)+GENES_YSHIFT+geneY + 10)
-                  .on('mouseover', function() {
-
-                  })
-
-
+                  .attr('y2', -(currentHeights.geneWindowHeight-SD_1COL_HEIGHT)+GENES_YSHIFT+geneY + 10);
               }
 
               if (useCluster) {
@@ -629,6 +647,14 @@
           }
         }
 
+        function drawDetailWindow() {
+          var dv = svgTarget.append('g').classed('test',true)
+            .attr('transform', 'translate(0,' + (currentHeights.fullSVGHeight - DETAIL_WIN_HEIGHT)+")");
+
+          drawBarrierLine.call(svgTarget, currentHeights.fullSVGHeight - DETAIL_WIN_HEIGHT);
+
+        }
+
         //Create unique callid for each http request.
         //This avoids a race condition where two or more requests are made at the same time,
         //and multiple results are drawn incorrectly / overlapping
@@ -647,7 +673,7 @@
 
             updateStatusText('Requesting ...', false);
             drawScale();
-            drawBarrierLine();
+
             drawBands(scope.activeSelection);
             drawSensitivityBorders();
 
@@ -675,9 +701,15 @@
                 });
 
                 drawGenes(geneDataSet);
+
                 updateContainerHeights(maxTrack);
+
                 if (scope.phenotypes) {
                   drawPhenotypes(geneDataSet, currentHeights);
+                }
+
+                if (scope.detailWindow) {
+                  drawDetailWindow();
                 }
 
                 var s = scope.boundFrom < 0 ? 0 : scope.boundFrom;
