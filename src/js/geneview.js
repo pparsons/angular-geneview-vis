@@ -437,7 +437,6 @@
           function domDraw(response) {
 
             var data = preprocessPhenoData(response);
-            //console.log(data);
 
             var phenotypes = svgTarget.append('g')
               .attr('transform', 'translate(0,' + (currentHeights.geneWindowHeight - SD_1COL_HEIGHT) + ")")
@@ -499,7 +498,7 @@
                 }
 
                 function showDetails(d, i) {
-                  console.log('lcache-sd', lineCache);
+
                   lineCache[i].attr('stroke', 'steelblue');
 
                   highlightText.call(this);
@@ -538,7 +537,6 @@
                 xpos = lastPos.xPOS += 50;
 
                 lineCache.push(drawline.call(this));
-                console.log('lcache', lineCache);
 
                 this.append('circle')
                     .attr('fill', '#666666')
@@ -568,7 +566,6 @@
 
                   this.append('circle')
                     .attr('fill', function(d) {
-
 
                       var p1 = d.phenotypes[i].phenotypeMap.phenotype.charAt(0);
                       //color according to
@@ -601,7 +598,7 @@
             if (!overflow) {
               lastPos.xPOS = (scope.width - (totalPhenotypes * PX_PER_PHENOTYPE)) / 2;
             } else {
-              //
+              lastPos.xPOS = (scope.width - (data.length * PX_PER_PHENOTYPE)) / 2;
             }
 
             //Loop per gene of phenotypes
