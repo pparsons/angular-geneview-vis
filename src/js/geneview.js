@@ -1,4 +1,4 @@
-/*global angular, d3, _*/
+/*global angular, d3, _, console*/
 (function () {
   "use strict";
   angular
@@ -27,10 +27,8 @@
         var
         // Fixed one unit of height in px
           SD_1COL_HEIGHT = 20,
-          GENES_YSHIFT = 34;
-
-
-        scope.selectorPhenotypes = []; //phenotypes related to a location that is selected
+          GENES_YSHIFT = 34,
+          PHENOTYPES_HEIGHT = 225;
 
         //when selector has a new location
         scope.$on("selector:newLoc", function (e, arg) {
@@ -75,7 +73,7 @@
           geneTip = d3.tip()
             .attr('class', 'd3-tip')
             .direction('n')
-            .offset([-5, 0])
+            .offset([-8, 0])
             .html(function (d) {
               var tiptemp = '<div class="gene-tip"><span style="color:#ffb006">' + d.gene.symbol + "</span> <div>" + d.gene.desc + "</div></div> ";
               return tiptemp;
@@ -93,7 +91,7 @@
               phenotypes.forEach(function(v, i) {
                 t+= '<div>'+ (++i) +'. '+ v.phenotypeMap.phenotype + '</div>';
 
-              })
+              });
 
               return t;
             });
@@ -151,9 +149,14 @@
             .attr('y', 13);
         }
 
-        function updateStatusText(text) {
+        function updateStatusText(text, append) {
           if (scope.showStatus) {
-            statusText.text(text);
+            if(append) {
+              var prev = statusText.text();
+              statusText.text(prev + text);
+            } else {
+              statusText.text(text);
+            }
           }
         }
 
@@ -165,6 +168,7 @@
 
             statusBar.append('rect')
               .classed('geneview-statusbar', true)
+              .attr('fill', '#ededed')
               .attr('width', scope.width)
               .attr('height', SD_1COL_HEIGHT);
 
@@ -244,11 +248,12 @@
             return d.gene.symbol;
           });
 
-          genes.on('mouseover', geneTip.show)
+          genes.on('mouseover', function(d) {
+            geneTip.show(d, this);
+          })
             .on('mouseout', geneTip.hide);
           //.on('contextmenu', d3.contextMenu(menu))
           //.on('mousedown', d3.contextMenu(menu));
-
 
           //update geneDB
           genes.each(function(d) {
@@ -259,7 +264,6 @@
 
         function updateContainerHeights(totalGeneTracks) {
           var yShift = (totalGeneTracks + 1) * SD_1COL_HEIGHT + (SD_1COL_HEIGHT * 4);
-          var PHENOTYPES_HEIGHT = 280;
 
           var actHeight = scope.phenotypes ? yShift + PHENOTYPES_HEIGHT : yShift;
 
@@ -387,8 +391,7 @@
             var dataSet = [];
             for (var i = 0; i < res.length; i++) {
 
-
-              var geneSymbol = res[i].symbol.toUpperCase()
+              var geneSymbol = res[i].symbol.toUpperCase();
 
               if (geneDB.hasOwnProperty(geneSymbol)) {
                 dataSet.push(
@@ -419,6 +422,7 @@
         }
 
         function drawPhenotypes(data, currentHeights) {
+          var totalPhenotypes = 0;
 
           phenotypeLoader.load(data)
             .catch(function (e) {
@@ -432,17 +436,15 @@
             var data = preprocessPhenoData(response);
 
             var phenotypes = svgTarget.append('g')
-              .classed('phenotypes', true)
               .attr('transform', 'translate(0,' + (currentHeights.geneWindowHeight - SD_1COL_HEIGHT) + ")")
               .selectAll('g')
-              .data(data).enter().append('g');
+              .data(data).enter()
+              .append('g')
+              .classed('phenotype', true);
 
-            var totalPhenotypes = 0;
-            for (var i =0; i<data.length;i++) {
+            for (var i =0; i < data.length;i++) {
               totalPhenotypes += data[i].phenotypes.length;
             }
-
-            //console.log('g:',data.length, 'pheno',totalPhenotypes);
 
             //ESTIMATED
             var PX_PER_PHENOTYPE = 59;
@@ -450,127 +452,160 @@
             //too many single phenotypes to draw on the screen
             var overflow = (totalPhenotypes * PX_PER_PHENOTYPE) >= scope.width ? true : false;
 
-            //console.log('geneDB', geneDB)
-            //console.log('data',data)
-            //console.log('phenotypes-d3',phenotypes);
-
             function drawPhenotype(lastPos, useCluster) {
               /*jshint validthis: true */
 
               var data = this.datum();
 
-              //var d3gene = svgTarget.select("#gene_"+ data.gene.gene.symbol)[0][0];
-              //var d3gene = d3.select(geneDB[data.gene.gene.symbol].d3Selection);
               var d3gene = svgTarget.select("#gene_"+ data.gene.gene.symbol);
               var geneX = +d3gene.attr('x');
               var geneY = +d3gene.attr('y');
 
-              //d3gene.attr('width') returning wrong results for some reason. Manually recalculating width
               var geneWidth = (+scope.xscale(data.gene.gene.end)) - (+scope.xscale(data.gene.gene.start));
-
-              //console.log(geneX, geneY, geneWidth);
 
               var margin = {
                 top: 20
               };
 
-              function appendPhenoText(text, xpos, cluster) {
+              var lineCache = [];
+
+              var xpos;
+              function appendPhenoText(text, i, xpos, cluster) {
+
+                var geneData = this.datum().gene;
+                var domgene = svgTarget.select('#gene_' + geneData.gene.symbol)[0][0];
+
+
+                function blackText() {
+                  d3.select(this)
+                    .attr('style', 'cursor: default; fill:black;');
+                }
+
+                function highlightText() {
+                  d3.select(this)
+                    .attr('style', 'cursor: pointer; fill:steelblue;');
+                }
+
+                function hideDetails(i) {
+
+                  phenoTip.hide();
+                  geneTip.hide(geneData, domgene);
+                  blackText.call(this);
+                  lineCache[i].attr('stroke', '#d4d4d4');
+                }
+
+                function showDetails(d, i) {
+
+                  lineCache[i].attr('stroke', 'steelblue');
+
+                  highlightText.call(this);
+
+                  if(cluster) {
+                    phenoTip.show(d);
+                  }
+
+                  geneTip.show(geneData, domgene);
+                }
+
                 this.append('text')
                   .text(text)
                   .attr('transform', "translate(" + (xpos + 12) + "," + (margin.top + 15) + ")rotate(25)")
 
                   .on('mouseover', function (d) {
-                    d3.select(this)
-                      .attr('style', 'cursor: pointer; fill:steelblue;');
-                    lineover();
-
-                    if(cluster) {
-                      phenoTip.show(d);
-                    }
+                    showDetails.call(this, d, i);
                   })
                   .on('mouseout', function () {
-                    d3.select(this)
-                      .attr('style', 'cursor: default; fill:black;');
-                    lineoff();
-
-
-                    phenoTip.hide();
-
+                    hideDetails.call(this, i);
                   });
 
               }
 
-              var xpos = lastPos.xPOS += 50;
-
-              var line = this.append('line')
-                .attr('stroke', '#d4d4d4')
-                .attr('stroke-width', '1')
-                .attr('x1', xpos)
-                .attr('y1', margin.top)
-                .attr('x2', geneX + (geneWidth / 2))
-                .attr('y2', -(currentHeights.geneWindowHeight-SD_1COL_HEIGHT)+GENES_YSHIFT+geneY + 10);
-
-              function lineover(){
-                line.attr('stroke', 'steelblue');
+              function drawline() {
+                return this.append('line')
+                  .attr('stroke', '#d4d4d4')
+                  .attr('stroke-width', '1')
+                  .attr('x1', xpos)
+                  .attr('y1', margin.top)
+                  .attr('x2', geneX + (geneWidth / 2))
+                  .attr('y2', -(currentHeights.geneWindowHeight-SD_1COL_HEIGHT)+GENES_YSHIFT+geneY + 10);
               }
 
-              function lineoff(){
-                line.attr('stroke', '#d4d4d4');
-              }
+              if (useCluster) {
+                xpos = lastPos.xPOS += 50;
 
-              if(useCluster) {
+                lineCache.push(drawline.call(this));
+
                 this.append('circle')
-                  .attr('fill', '#666666')
-                  .attr('r', 10)
-                  .attr('cx', xpos)
-                  .attr('cy', margin.top);
+                    .attr('fill', '#666666')
+                    .attr('r', 10)
+                    .attr('cx', xpos)
+                    .attr('cy', margin.top);
 
-                var clusterCountOffset = data.phenotypes.length >= 10 ? 5 : 3;
+                  var clusterCountOffset = data.phenotypes.length >= 10 ? 5 : 3;
 
-                this.append('text')
-                  .text(data.phenotypes.length)
-                  .attr('fill', 'white')
-                  .attr('x', xpos - clusterCountOffset)
-                  .attr('y', margin.top + clusterCountOffset)
+                  this.append('text')
+                    .text(data.phenotypes.length)
+                    .attr('fill', 'white')
+                    .attr('x', xpos - clusterCountOffset)
+                    .attr('y', margin.top + clusterCountOffset);
 
-                appendPhenoText.call(this, data.gene.gene.symbol + ' cluster', xpos, true);
+                  appendPhenoText.call(this, data.gene.gene.symbol + ' cluster', 0, xpos, true);
 
               } else {
-                this.append('circle')
-                  .attr('fill', function(d) {
 
-                    var p1 = d.phenotypes[0].phenotypeMap.phenotype.charAt(0);
-                    //color according to
-                    if (p1 === '{') { //susceptibility
-                      return "#CBBCDC";
-                    }
-                    else if (p1 === '?') { //unconfirmed
-                      return "#C1DE77";
-                    }
-                    else if (p1 === '[') { //nondisease
-                      return "#83DEC1";
-                    }
-                    else {
-                      return "#E6B273";
-                    }
-                  })
-                  .attr('r', 5)
-                  .attr('cx', xpos)
-                  .attr('cy', margin.top);
+                for(var i = 0; i < data.phenotypes.length; i++) {
 
-                appendPhenoText.call(this, data.phenotypes[0].phenotypeMap.phenotype, xpos, false);
+                  var p = data.phenotypes[i].phenotypeMap;
+
+                  xpos = lastPos.xPOS += 50;
+
+                  lineCache.push(drawline.call(this));
+
+                  this.append('circle')
+                    .attr('fill', function(d) {
+
+                      var p1 = d.phenotypes[i].phenotypeMap.phenotype.charAt(0);
+                      //color according to
+                      if (p1 === '{') { //susceptibility
+                        return "#CBBCDC";
+                      }
+                      else if (p1 === '?') { //unconfirmed
+                        return "#C1DE77";
+                      }
+                      else if (p1 === '[') { //nondisease
+                        return "#83DEC1";
+                      }
+                      else {
+                        return "#E6B273";
+                      }
+                    })
+                    .attr('r', 5)
+                    .attr('cx', xpos)
+                    .attr('cy', margin.top);
+
+                  appendPhenoText.call(this, data.phenotypes[i].phenotypeMap.phenotype, i, xpos, false);
+                }
               }
-
             }
 
             var lastPos = {
               'xPOS': -30
             };
 
+            if (!overflow) {
+              lastPos.xPOS = (scope.width - (totalPhenotypes * PX_PER_PHENOTYPE)) / 2;
+            } else {
+              lastPos.xPOS = (scope.width - (data.length * PX_PER_PHENOTYPE)) / 2;
+            }
+
+            if (lastPos.xPOS < -30) {
+              lastPos.xPOS = -30;
+            }
+
             //Loop per gene of phenotypes
-            for(var k = phenotypes[0].length -1; k !== 0; k--) {
+            for(var k = phenotypes[0].length -1; k >= 0; k--) {
               var d = d3.select(phenotypes[0][k]);
-              var totalPhenoTypes = d.data()[0].phenotypes.length;
+              var totalPhenoTypes = d.datum().phenotypes.length;
 
               if (!overflow || totalPhenoTypes ===1) {
                 //draw in expanded form
@@ -581,29 +616,46 @@
 
               }
             }
-          }
 
+            updateStatusText(' Phenotypes: ' + totalPhenotypes, true);
+          }
+        }
+
+        //Create unique callid for each http request.
+        //This avoids a race condition where two or more requests are made at the same time,
+        //and multiple results are drawn incorrectly / overlapping
+        var calls = 0;
+        var newestCallID = 0;
+
+        function CallID (id) {
+          this.id = id;
         }
 
         scope.render = function () {
-          scope.selectorPhenotypes = [];
+
           init();
+
           if (scope.activeSelection.length > 0) {
-            updateStatusText('Requesting ...');
+
+            updateStatusText('Requesting ...', false);
             drawScale();
             drawBarrierLine();
             drawBands(scope.activeSelection);
             drawSensitivityBorders();
-            scope.geneLoadPromise = geneLoader.getGenes(scope.chr, scope.boundFrom, scope.boundTo, function (data) {
 
-              if (data.length === 0) {
-                //console.log('no data');
-                updateStatusText("No Data");
+            var callid = new CallID(++calls);
+            scope.geneLoadPromise = geneLoader.getGenes(scope.chr, scope.boundFrom, scope.boundTo, callid, function (data, id) {
+
+              //Old request call detected, abort drawing
+              if(id < newestCallID) {
                 return;
               }
 
-              scope.g2pO = []; //for omim
-              scope.g2pL = []; //for literature
+              if (data.length === 0) {
+                //console.log('no data');
+                updateStatusText("No Data", false);
+                return;
+              }
 
               if (typeof data.err === 'undefined') {
 
@@ -619,7 +671,10 @@
                 if (scope.phenotypes) {
                   drawPhenotypes(geneDataSet, currentHeights);
                 }
-                updateStatusText('Loaded: ' + scope.chr + ' [' + scope.boundFrom + " : " + scope.boundTo + '] Results: ' + geneDataSet.length);
+
+                var s = scope.boundFrom < 0 ? 0 : scope.boundFrom;
+                var e = scope.boundTo > scope.selectorEnd ? scope.selectorEnd : scope.boundTo;
+                updateStatusText('Loaded: CHR:' + scope.chr + ' [' + s+ ": " + e + '] Genes: ' + geneDataSet.length);
 
                 if (scope.articleStats) {
                   articleStatLoader.getArticleCount(extractGeneSymbol(geneDataSet), function (aCount) {
@@ -632,6 +687,7 @@
                 updateStatusText(data.err);
               }
             });
+            newestCallID = callid.id;
           }
           else {
             updateStatusText("No active selectors");
@@ -641,6 +697,7 @@
       }
 
       function controller($scope) {
+        /*jshint validthis:true */
         this.getXscale = function () {
           return $scope.xscale;
         };

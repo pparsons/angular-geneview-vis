@@ -14,10 +14,6 @@
     shape-rendering: crispEdges;
 }
 
-.angular-geneview-vis .geneview-statusbar {
-    fill: #d4d4d4;
-}
-
 .acen-text, .gpos50-text,.gpos66-text, .gpos75-text, .gpos100-text {
     fill: #ededed;
 }
