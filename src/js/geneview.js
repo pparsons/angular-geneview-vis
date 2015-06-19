@@ -3,7 +3,7 @@
   "use strict";
   angular
     .module('angularGeneviewVis')
-    .directive('geneview', ['geneLoader', 'phenotypeLoader', 'articleStatLoader', 'geneManager', '$rootScope' /*,'$state'*/, '$q', 'gen2Phen', function (geneLoader, phenotypeLoader, articleStatLoader, geneManager, $rootScope/*,$state*/, $q, gen2Phen) {
+    .directive('geneview', ['geneLoader', 'phenotypeLoader', 'articleStatLoader', 'geneManager', function (geneLoader, phenotypeLoader, articleStatLoader, geneManager) {
 
       function link(scope, element, attrs, chrAPI) {
 
@@ -43,6 +43,7 @@
           scope.displayGeneview = true;
           scope.articleStats = (scope.articleStats === true) ? true : (scope.articleStats === 'true');
           scope.phenotypes = (scope.phenotypes === true) ? true : (scope.phenotypes === 'true');
+          scope.detailWindow = (scope.detailWindow === true) ? true : (scope.detailWindow === 'true');
           scope.activeSelection = selectionModel.getSelectedBands().bands;
           scope.sensitivity = Math.round(selectionModel.getSelectedBands().sensitivity);
           scope.boundFrom = selectionModel.selStart - scope.sensitivity;
@@ -470,6 +471,8 @@
               var lineCache = [];
 
               var xpos;
+
+
               function appendPhenoText(text, i, xpos, cluster) {
 
                 var geneData = this.datum().gene;
@@ -527,7 +530,12 @@
                   .attr('x1', xpos)
                   .attr('y1', margin.top)
                   .attr('x2', geneX + (geneWidth / 2))
-                  .attr('y2', -(currentHeights.geneWindowHeight-SD_1COL_HEIGHT)+GENES_YSHIFT+geneY + 10);
+                  .attr('y2', -(currentHeights.geneWindowHeight-SD_1COL_HEIGHT)+GENES_YSHIFT+geneY + 10)
+                  .on('mouseover', function() {
+
+                  })
+
+
               }
 
               if (useCluster) {
@@ -712,7 +720,8 @@
         scope: {
           showStatus: '@',
           articleStats: '@',
-          phenotypes: '@'
+          phenotypes: '@',
+          detailWindow: '@'
         },
         templateUrl: 'src/geneview-template.html'
       };
