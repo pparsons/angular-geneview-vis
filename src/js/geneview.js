@@ -27,10 +27,8 @@
         var
         // Fixed one unit of height in px
           SD_1COL_HEIGHT = 20,
-          GENES_YSHIFT = 34;
-
-
-        scope.selectorPhenotypes = []; //phenotypes related to a location that is selected
+          GENES_YSHIFT = 34,
+          PHENOTYPES_HEIGHT = 225;
 
         //when selector has a new location
         scope.$on("selector:newLoc", function (e, arg) {
@@ -266,7 +264,6 @@
 
         function updateContainerHeights(totalGeneTracks) {
           var yShift = (totalGeneTracks + 1) * SD_1COL_HEIGHT + (SD_1COL_HEIGHT * 4);
-          var PHENOTYPES_HEIGHT = 280;
 
           var actHeight = scope.phenotypes ? yShift + PHENOTYPES_HEIGHT : yShift;
 
@@ -601,6 +598,10 @@
               lastPos.xPOS = (scope.width - (data.length * PX_PER_PHENOTYPE)) / 2;
             }
 
+            if (lastPos.xPOS < -30) {
+              lastPos.xPOS = -30;
+            }
+
             //Loop per gene of phenotypes
             for(var k = phenotypes[0].length -1; k >= 0; k--) {
               var d = d3.select(phenotypes[0][k]);
@@ -631,8 +632,6 @@
         }
 
         scope.render = function () {
-
-          scope.selectorPhenotypes = [];
 
           init();
 
@@ -673,7 +672,9 @@
                   drawPhenotypes(geneDataSet, currentHeights);
                 }
 
-                updateStatusText('Loaded: CHR:' + scope.chr + ' [' + scope.boundFrom + ": " + scope.boundTo + '] Genes: ' + geneDataSet.length);
+                var s = scope.boundFrom < 0 ? 0 : scope.boundFrom;
+                var e = scope.boundTo > scope.selectorEnd ? scope.selectorEnd : scope.boundTo;
+                updateStatusText('Loaded: CHR:' + scope.chr + ' [' + s+ ": " + e + '] Genes: ' + geneDataSet.length);
 
                 if (scope.articleStats) {
                   articleStatLoader.getArticleCount(extractGeneSymbol(geneDataSet), function (aCount) {
