@@ -332,8 +332,8 @@
 
                                 gvpoly.attr('points', p1x + "," + p1y + " " + p2x + "," + p2y + " " + p3x + "," + p3y + " " + p4x + "," + p4y)
                                     .style({
-                                        "fill": "#7f7f7f",
-                                        "opacity": 0.4,
+                                        "fill": "#666666",
+                                        "opacity": 0.2,
                                         "stroke": "black",
                                         "stroke-width" : 1
                                     });
