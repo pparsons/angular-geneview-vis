@@ -85,25 +85,25 @@
               return tiptemp;
             });
 
-          //phenoTip = d3.tip()
-          //  .attr('class', 'd3-tip')
-          //  .direction('w')
-          //  .offset([-18,-30])
-          //  .html(function(d){
-          //    //console.log(d);
-          //    var phenotypes = d.phenotypes;
-          //    //phenotypes[i].phenotypeMap.phenotype
-          //    var t = '';
-          //    phenotypes.forEach(function(v, i) {
-          //      t+= '<div>'+ (++i) +'. '+ v.phenotypeMap.phenotype + '</div>';
-          //
-          //    });
-          //
-          //    return t;
-          //  });
+          phenoTip = d3.tip()
+            .attr('class', 'd3-tip')
+            .direction('w')
+            .offset([-18,-30])
+            .html(function(d){
+              //console.log(d);
+              var phenotypes = d.phenotypes;
+              //phenotypes[i].phenotypeMap.phenotype
+              var t = '';
+              phenotypes.forEach(function(v, i) {
+                t+= '<div>'+ (++i) +'. '+ v.phenotypeMap.phenotype + '</div>';
+
+              });
+
+              return t;
+            });
 
           svgTarget.call(geneTip);
-          //svgTarget.call(phenoTip);
+          svgTarget.call(phenoTip);
 
           drawStatusBar();
           updateStatusText("Initialized");
@@ -528,7 +528,7 @@
 
                 function hideDetails(i) {
 
-                  //phenoTip.hide();
+                  phenoTip.hide();
                   geneTip.hide(geneData, domgene);
                   blackText.call(this);
                   lineCache[i].attr('stroke', '#d4d4d4');
@@ -541,7 +541,7 @@
                   highlightText.call(this);
 
                   if(cluster) {
-                    //phenoTip.show(d);
+                    phenoTip.show(d);
                   }
 
                   geneTip.show(geneData, domgene);
