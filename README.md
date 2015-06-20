@@ -2,7 +2,8 @@
 # angular-geneview-vis 
 > Angular directive for interactive gene positional and phenotype representation
 
-Live Demo of latest code [HERE](http://104.236.236.182/angular-geneview-vis/)
+![](http://i.imgur.com/EJ5xjwS.png)
+
 # Development
 
 Start web server for development:
