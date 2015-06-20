@@ -454,9 +454,7 @@
           dwObjects.phenoSymbol.text(pheno.phenotype);
           dwObjects.phenoCircle.attr('fill', getPhenoColor(pheno.phenotype)).attr('r', 5);
           dwObjects.phenoType.text('Disorder: ' + getPhenoDisorderType(pheno.phenotype));
-          dwObjects.phenoInheritance.text('Inheritance :' + (pheno.phenotypeInheritance === null ? "N/A" : pheno.phenotypeInheritance));
-
-
+          dwObjects.phenoInheritance.text('Inheritance: ' + (pheno.phenotypeInheritance === null ? "N/A" : pheno.phenotypeInheritance));
         }
 
         function drawPhenotypes(data, currentHeights) {
@@ -698,7 +696,7 @@
               .style('font-size', size + 'px')
               .attr('x', x)
               .attr('y', y)
-              .text(testtext);
+              //.text(testtext);
 
           }
 
