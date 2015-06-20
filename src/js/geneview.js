@@ -3,12 +3,16 @@
   "use strict";
   angular
     .module('angularGeneviewVis')
-    .directive('geneview', ['geneLoader', 'phenotypeLoader', 'articleStatLoader', 'geneManager', '$rootScope' /*,'$state'*/, '$q', 'gen2Phen', function (geneLoader, phenotypeLoader, articleStatLoader, geneManager, $rootScope/*,$state*/, $q, gen2Phen) {
+    .directive('geneview', ['geneLoader', 'phenotypeLoader', 'articleStatLoader', 'geneManager', function (geneLoader, phenotypeLoader, articleStatLoader, geneManager) {
 
       function link(scope, element, attrs, chrAPI) {
 
         var
           svgTarget,
+
+          //Barrier lines to separate components
+          geneline,
+          detailLine,
 
           axis,
           statusBar,
@@ -28,7 +32,8 @@
         // Fixed one unit of height in px
           SD_1COL_HEIGHT = 20,
           GENES_YSHIFT = 34,
-          PHENOTYPES_HEIGHT = 225;
+          PHENOTYPES_HEIGHT = 225,
+          DETAIL_WIN_HEIGHT = 130;
 
         //when selector has a new location
         scope.$on("selector:newLoc", function (e, arg) {
@@ -43,6 +48,7 @@
           scope.displayGeneview = true;
           scope.articleStats = (scope.articleStats === true) ? true : (scope.articleStats === 'true');
           scope.phenotypes = (scope.phenotypes === true) ? true : (scope.phenotypes === 'true');
+          scope.detailWindow = (scope.detailWindow === true) ? true : (scope.detailWindow === 'true');
           scope.activeSelection = selectionModel.getSelectedBands().bands;
           scope.sensitivity = Math.round(selectionModel.getSelectedBands().sensitivity);
           scope.boundFrom = selectionModel.selStart - scope.sensitivity;
@@ -260,12 +266,18 @@
             geneDB[d.gene.symbol] = d;
             //geneDB[d.gene.symbol].d3Selection = this;
           });
+
+          geneline = drawBarrierLine.call(svgTarget, 0);
         }
 
         function updateContainerHeights(totalGeneTracks) {
           var yShift = (totalGeneTracks + 1) * SD_1COL_HEIGHT + (SD_1COL_HEIGHT * 4);
 
           var actHeight = scope.phenotypes ? yShift + PHENOTYPES_HEIGHT : yShift;
+
+          if(scope.detailWindow) {
+            actHeight += DETAIL_WIN_HEIGHT;
+          }
 
           divParent.style('height', actHeight + "px");
 
@@ -279,9 +291,21 @@
           var extraShift = scope.showStatus ? 0 : SD_1COL_HEIGHT;
           var extraShiftInv = scope.showStatus ? SD_1COL_HEIGHT : 0;
           axis.selectAll('.tick line').attr('y2', yShift + extraShift - (SD_1COL_HEIGHT * 2));
-          svgTarget.select('.barrier-line')
-            .attr('y1', yShift - SD_1COL_HEIGHT)
-            .attr('y2', yShift - SD_1COL_HEIGHT);
+
+          function updateBarrierLines(y) {
+            /*jshint validthis: true */
+
+            if(this !== undefined) {
+              this.attr('y1', y);
+              this.attr('y2', y);
+            }
+          }
+
+          updateBarrierLines.call(geneline, yShift - SD_1COL_HEIGHT);
+
+          if(scope.detailWindow) {
+            updateBarrierLines.call(detailLine, actHeight - DETAIL_WIN_HEIGHT);
+          }
 
           svgTarget.selectAll('.sensitivityBorders')
             .attr('height', yShift - extraShiftInv);
@@ -291,16 +315,14 @@
             fullSVGHeight: actHeight
           };
 
-          //console.log(currentHeights)
         }
 
-        function drawBarrierLine() {
-          svgTarget.append('line')
-            .classed('barrier-line', true)
+        function drawBarrierLine(ycoord) {
+          return this.append('line')
             .attr('x1', 0)
-            .attr('y1', 0)
+            .attr('y1', ycoord)
             .attr('x2', scope.width)
-            .attr('y2', 0)
+            .attr('y2', ycoord)
             .attr('stroke', '#d4d4d4')
             .attr('stroke-width', 1);
         }
@@ -421,6 +443,21 @@
           }
         }
 
+        function updateDetailInfo(model, i) {
+
+          var gene = model.gene.gene;
+          dwObjects.geneTitle.text(gene.symbol);
+          dwObjects.geneSynonyms.text(gene.synonyms);
+          dwObjects.geneDesc.text(gene.desc);
+          dwObjects.geneLoci.text(gene.cytloc + ' [' + gene.start + ' - ' + gene.end + ']');
+
+          var pheno = model.phenotypes[i].phenotypeMap;
+          dwObjects.phenoSymbol.text(pheno.phenotype);
+          dwObjects.phenoCircle.attr('fill', getPhenoColor(pheno.phenotype)).attr('r', 5);
+          dwObjects.phenoType.text('Disorder: ' + getPhenoDisorderType(pheno.phenotype));
+          dwObjects.phenoInheritance.text('Inheritance: ' + (pheno.phenotypeInheritance === null ? "N/A" : pheno.phenotypeInheritance));
+        }
+
         function drawPhenotypes(data, currentHeights) {
           var totalPhenotypes = 0;
 
@@ -470,9 +507,12 @@
               var lineCache = [];
 
               var xpos;
+
               function appendPhenoText(text, i, xpos, cluster) {
 
-                var geneData = this.datum().gene;
+                var data = this.datum();
+
+                var geneData = data.gene;
                 var domgene = svgTarget.select('#gene_' + geneData.gene.symbol)[0][0];
 
 
@@ -516,6 +556,26 @@
                   })
                   .on('mouseout', function () {
                     hideDetails.call(this, i);
+                  })
+                  .on('click', function(d) {
+                    updateDetailInfo(d, i);
+                  }).on('contextmenu', function(d) {
+
+                    var menu = [];
+                    function makeItem(title, i) {
+                      return {
+                        title: title,
+                        action: function() { updateDetailInfo(d, i)}
+                      };
+                    }
+
+                    for(var j =0; j < data.phenotypes.length; j ++) {
+                      var p = data.phenotypes[j].phenotypeMap;
+
+                      menu.push(makeItem(p.phenotype, j));
+                    }
+
+                    d3.contextMenu(menu)(d,i);
                   });
 
               }
@@ -563,21 +623,7 @@
 
                   this.append('circle')
                     .attr('fill', function(d) {
-
-                      var p1 = d.phenotypes[i].phenotypeMap.phenotype.charAt(0);
-                      //color according to
-                      if (p1 === '{') { //susceptibility
-                        return "#CBBCDC";
-                      }
-                      else if (p1 === '?') { //unconfirmed
-                        return "#C1DE77";
-                      }
-                      else if (p1 === '[') { //nondisease
-                        return "#83DEC1";
-                      }
-                      else {
-                        return "#E6B273";
-                      }
+                      return getPhenoColor(d.phenotypes[i].phenotypeMap.phenotype);
                     })
                     .attr('r', 5)
                     .attr('cx', xpos)
@@ -621,6 +667,77 @@
           }
         }
 
+        function getPhenoColor(p) {
+          var p1 = p.charAt(0);
+          //color according to
+          if (p1 === '{') { //susceptibility
+            return "#CBBCDC";
+          }
+          else if (p1 === '?') { //unconfirmed
+            return "#C1DE77";
+          }
+          else if (p1 === '[') { //nondisease
+            return "#83DEC1";
+          }
+          else {
+            return "#E6B273";
+          }
+        }
+
+        function getPhenoDisorderType(p) {
+          var p1 = p.charAt(0);
+          //color according to
+          if (p1 === '{') { //susceptibility
+            return "Susceptibility to multifactorial disorders or to infection";
+          }
+          else if (p1 === '?') { //unconfirmed
+            return "Unconfirmed";
+          }
+          else if (p1 === '[') { //nondisease
+            return "Nondiease";
+          }
+          else {
+            return "N/A";
+          }
+        }
+
+
+        var dwObjects = {};
+
+        function drawDetailWindow() {
+          var dv = svgTarget.append('g')
+            .attr('transform', 'translate(0,' + (currentHeights.fullSVGHeight - DETAIL_WIN_HEIGHT)+")");
+
+          drawBarrierLine.call(svgTarget, currentHeights.fullSVGHeight - DETAIL_WIN_HEIGHT);
+
+          function drawText(x, y, size, testtext) {
+            return dv.append('text')
+              .style('font-size', size + 'px')
+              .attr('x', x)
+              .attr('y', y)
+              //.text(testtext);
+
+          }
+
+          var geneX = 20;
+          var geneY = 40;
+          dwObjects.geneTitle = drawText(geneX, geneY, 15, "GHR");
+
+          dwObjects.geneSynonyms = drawText(geneX, geneY + 15, 11, "GHAR, ADER");
+          dwObjects.geneDesc = drawText(geneX, geneY + 35, 11, "long dexcla;ksdjf;lask ");
+          dwObjects.geneLoci = drawText(geneX, geneY + 50, 11, ":1232 p3232");
+
+          var phenoX = 400;
+          var phenoY = 40;
+          dwObjects.phenoCircle = dv.append('circle')
+            .attr('cx', phenoX - 10)
+            .attr('cy', phenoY - 5);
+
+          dwObjects.phenoSymbol = drawText(phenoX , phenoY, 13, "Mental retardation, autosoman recessive");
+          dwObjects.phenoType = drawText(phenoX, phenoY + 15, 11, "Disorder: nondisease");
+          dwObjects.phenoInheritance = drawText(phenoX, phenoY + 30, 11, "Inheritance: Autosomal Dominant");
+        }
+
         //Create unique callid for each http request.
         //This avoids a race condition where two or more requests are made at the same time,
         //and multiple results are drawn incorrectly / overlapping
@@ -639,7 +756,7 @@
 
             updateStatusText('Requesting ...', false);
             drawScale();
-            drawBarrierLine();
+
             drawBands(scope.activeSelection);
             drawSensitivityBorders();
 
@@ -652,7 +769,6 @@
               }
 
               if (data.length === 0) {
-                //console.log('no data');
                 updateStatusText("No Data", false);
                 return;
               }
@@ -667,9 +783,15 @@
                 });
 
                 drawGenes(geneDataSet);
+
                 updateContainerHeights(maxTrack);
+
                 if (scope.phenotypes) {
                   drawPhenotypes(geneDataSet, currentHeights);
+                }
+
+                if (scope.detailWindow) {
+                  drawDetailWindow();
                 }
 
                 var s = scope.boundFrom < 0 ? 0 : scope.boundFrom;
@@ -712,7 +834,8 @@
         scope: {
           showStatus: '@',
           articleStats: '@',
-          phenotypes: '@'
+          phenotypes: '@',
+          detailWindow: '@'
         },
         templateUrl: 'src/geneview-template.html'
       };
