@@ -443,7 +443,7 @@
         }
 
         function updateDetailInfo(model, i) {
-          console.log(model, i);
+
           var gene = model.gene.gene;
           dwObjects.geneTitle.text(gene.symbol);
           dwObjects.geneSynonyms.text(gene.synonyms);
@@ -557,7 +557,7 @@
                   })
                   .on('click', function(d) {
                     updateDetailInfo(d, i);
-                  })
+                  });
 
               }
 
@@ -750,7 +750,6 @@
               }
 
               if (data.length === 0) {
-                //console.log('no data');
                 updateStatusText("No Data", false);
                 return;
               }
