@@ -85,25 +85,25 @@
               return tiptemp;
             });
 
-          phenoTip = d3.tip()
-            .attr('class', 'd3-tip')
-            .direction('w')
-            .offset([-18,-30])
-            .html(function(d){
-              //console.log(d);
-              var phenotypes = d.phenotypes;
-              //phenotypes[i].phenotypeMap.phenotype
-              var t = '';
-              phenotypes.forEach(function(v, i) {
-                t+= '<div>'+ (++i) +'. '+ v.phenotypeMap.phenotype + '</div>';
-
-              });
-
-              return t;
-            });
+          //phenoTip = d3.tip()
+          //  .attr('class', 'd3-tip')
+          //  .direction('w')
+          //  .offset([-18,-30])
+          //  .html(function(d){
+          //    //console.log(d);
+          //    var phenotypes = d.phenotypes;
+          //    //phenotypes[i].phenotypeMap.phenotype
+          //    var t = '';
+          //    phenotypes.forEach(function(v, i) {
+          //      t+= '<div>'+ (++i) +'. '+ v.phenotypeMap.phenotype + '</div>';
+          //
+          //    });
+          //
+          //    return t;
+          //  });
 
           svgTarget.call(geneTip);
-          svgTarget.call(phenoTip);
+          //svgTarget.call(phenoTip);
 
           drawStatusBar();
           updateStatusText("Initialized");
@@ -293,6 +293,7 @@
           axis.selectAll('.tick line').attr('y2', yShift + extraShift - (SD_1COL_HEIGHT * 2));
 
           function updateBarrierLines(y) {
+            /*jshint validthis: true */
 
             if(this !== undefined) {
               this.attr('y1', y);
@@ -507,10 +508,11 @@
 
               var xpos;
 
-
               function appendPhenoText(text, i, xpos, cluster) {
 
-                var geneData = this.datum().gene;
+                var data = this.datum();
+
+                var geneData = data.gene;
                 var domgene = svgTarget.select('#gene_' + geneData.gene.symbol)[0][0];
 
 
@@ -526,7 +528,7 @@
 
                 function hideDetails(i) {
 
-                  phenoTip.hide();
+                  //phenoTip.hide();
                   geneTip.hide(geneData, domgene);
                   blackText.call(this);
                   lineCache[i].attr('stroke', '#d4d4d4');
@@ -539,7 +541,7 @@
                   highlightText.call(this);
 
                   if(cluster) {
-                    phenoTip.show(d);
+                    //phenoTip.show(d);
                   }
 
                   geneTip.show(geneData, domgene);
@@ -557,6 +559,23 @@
                   })
                   .on('click', function(d) {
                     updateDetailInfo(d, i);
+                  }).on('contextmenu', function(d) {
+
+                    var menu = [];
+                    function makeItem(title, i) {
+                      return {
+                        title: title,
+                        action: function() { updateDetailInfo(d, i)}
+                      };
+                    }
+
+                    for(var j =0; j < data.phenotypes.length; j ++) {
+                      var p = data.phenotypes[j].phenotypeMap;
+
+                      menu.push(makeItem(p.phenotype, j));
+                    }
+
+                    d3.contextMenu(menu)(d,i);
                   });
 
               }
