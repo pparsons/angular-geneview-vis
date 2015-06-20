@@ -454,6 +454,7 @@
           dwObjects.phenoSymbol.text(pheno.phenotype);
           dwObjects.phenoCircle.attr('fill', getPhenoColor(pheno.phenotype)).attr('r', 5);
           dwObjects.phenoType.text('Disorder: ' + getPhenoDisorderType(pheno.phenotype));
+          dwObjects.phenoInheritance.text('Inheritance :' + (pheno.phenotypeInheritance === null ? "N/A" : pheno.phenotypeInheritance));
 
 
         }
@@ -717,7 +718,7 @@
 
           dwObjects.phenoSymbol = drawText(phenoX , phenoY, 13, "Mental retardation, autosoman recessive");
           dwObjects.phenoType = drawText(phenoX, phenoY + 15, 11, "Disorder: nondisease");
-          //dwObjects.
+          dwObjects.phenoInheritance = drawText(phenoX, phenoY + 30, 11, "Inheritance: Autosomal Dominant");
         }
 
         //Create unique callid for each http request.
