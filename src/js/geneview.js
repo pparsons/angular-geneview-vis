@@ -295,7 +295,6 @@
           function updateBarrierLines(y) {
 
             if(this !== undefined) {
-              console.log(y)
               this.attr('y1', y);
               this.attr('y2', y);
             }
@@ -304,7 +303,6 @@
           updateBarrierLines.call(geneline, yShift - SD_1COL_HEIGHT);
 
           if(scope.detailWindow) {
-            console.log('dw');
             updateBarrierLines.call(detailLine, actHeight - DETAIL_WIN_HEIGHT);
           }
 
@@ -316,7 +314,6 @@
             fullSVGHeight: actHeight
           };
 
-          //console.log(currentHeights)
         }
 
         function drawBarrierLine(ycoord) {
@@ -445,6 +442,22 @@
           }
         }
 
+        function updateDetailInfo(model, i) {
+          console.log(model, i);
+          var gene = model.gene.gene;
+          dwObjects.geneTitle.text(gene.symbol);
+          dwObjects.geneSynonyms.text(gene.synonyms);
+          dwObjects.geneDesc.text(gene.desc);
+          dwObjects.geneLoci.text(gene.cytloc + ' [' + gene.start + ' - ' + gene.end + ']');
+
+          var pheno = model.phenotypes[i].phenotypeMap;
+          dwObjects.phenoSymbol.text(pheno.phenotype);
+          dwObjects.phenoCircle.attr('fill', getPhenoColor(pheno.phenotype)).attr('r', 5);
+          dwObjects.phenoType.text('Disorder: ' + getPhenoDisorderType(pheno.phenotype));
+
+
+        }
+
         function drawPhenotypes(data, currentHeights) {
           var totalPhenotypes = 0;
 
@@ -542,7 +555,10 @@
                   })
                   .on('mouseout', function () {
                     hideDetails.call(this, i);
-                  });
+                  })
+                  .on('click', function(d) {
+                    updateDetailInfo(d, i);
+                  })
 
               }
 
@@ -589,21 +605,7 @@
 
                   this.append('circle')
                     .attr('fill', function(d) {
-
-                      var p1 = d.phenotypes[i].phenotypeMap.phenotype.charAt(0);
-                      //color according to
-                      if (p1 === '{') { //susceptibility
-                        return "#CBBCDC";
-                      }
-                      else if (p1 === '?') { //unconfirmed
-                        return "#C1DE77";
-                      }
-                      else if (p1 === '[') { //nondisease
-                        return "#83DEC1";
-                      }
-                      else {
-                        return "#E6B273";
-                      }
+                      return getPhenoColor(d.phenotypes[i].phenotypeMap.phenotype);
                     })
                     .attr('r', 5)
                     .attr('cx', xpos)
@@ -647,12 +649,75 @@
           }
         }
 
+        function getPhenoColor(p) {
+          var p1 = p.charAt(0);
+          //color according to
+          if (p1 === '{') { //susceptibility
+            return "#CBBCDC";
+          }
+          else if (p1 === '?') { //unconfirmed
+            return "#C1DE77";
+          }
+          else if (p1 === '[') { //nondisease
+            return "#83DEC1";
+          }
+          else {
+            return "#E6B273";
+          }
+        }
+
+        function getPhenoDisorderType(p) {
+          var p1 = p.charAt(0);
+          //color according to
+          if (p1 === '{') { //susceptibility
+            return "Susceptibility to multifactorial disorders or to infection";
+          }
+          else if (p1 === '?') { //unconfirmed
+            return "Unconfirmed";
+          }
+          else if (p1 === '[') { //nondisease
+            return "Nondiease";
+          }
+          else {
+            return "N/A";
+          }
+        }
+
+
+        var dwObjects = {};
+
         function drawDetailWindow() {
-          var dv = svgTarget.append('g').classed('test',true)
+          var dv = svgTarget.append('g')
             .attr('transform', 'translate(0,' + (currentHeights.fullSVGHeight - DETAIL_WIN_HEIGHT)+")");
 
           drawBarrierLine.call(svgTarget, currentHeights.fullSVGHeight - DETAIL_WIN_HEIGHT);
 
+          function drawText(x, y, size, testtext) {
+            return dv.append('text')
+              .style('font-size', size + 'px')
+              .attr('x', x)
+              .attr('y', y)
+              .text(testtext);
+
+          }
+
+          var geneX = 20;
+          var geneY = 40;
+          dwObjects.geneTitle = drawText(geneX, geneY, 15, "GHR");
+
+          dwObjects.geneSynonyms = drawText(geneX, geneY + 15, 11, "GHAR, ADER");
+          dwObjects.geneDesc = drawText(geneX, geneY + 35, 11, "long dexcla;ksdjf;lask ");
+          dwObjects.geneLoci = drawText(geneX, geneY + 50, 11, ":1232 p3232");
+
+          var phenoX = 400;
+          var phenoY = 40;
+          dwObjects.phenoCircle = dv.append('circle')
+            .attr('cx', phenoX - 10)
+            .attr('cy', phenoY - 5);
+
+          dwObjects.phenoSymbol = drawText(phenoX , phenoY, 13, "Mental retardation, autosoman recessive");
+          dwObjects.phenoType = drawText(phenoX, phenoY + 15, 11, "Disorder: nondisease");
+          //dwObjects.
         }
 
         //Create unique callid for each http request.
