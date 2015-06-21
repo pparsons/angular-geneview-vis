@@ -457,8 +457,8 @@
           dwObjects.phenoType.text('Disorder: ' + getPhenoDisorderType(pheno.phenotype));
           dwObjects.phenoInheritance.text('Inheritance: ' + (pheno.phenotypeInheritance === null ? "N/A" : pheno.phenotypeInheritance));
 
-          dwObjects.geneTitleBar.attr('height', 20);
-          dwObjects.phenoTitleBar.attr('height', 20);
+          dwObjects.geneTitleBar.attr('height', 10);
+          dwObjects.phenoTitleBar.attr('height', 10);
         }
 
         function drawPhenotypes(data, currentHeights) {
@@ -723,7 +723,7 @@
           }
 
           var geneX = 20;
-          var geneY = 40;
+          var geneY = 35;
           dwObjects.geneTitle = drawText(geneX, geneY, 15, "GHR");
 
           dwObjects.geneSynonyms = drawText(geneX, geneY + 15, 11, "GHAR, ADER");
@@ -731,7 +731,7 @@
           dwObjects.geneLoci = drawText(geneX, geneY + 50, 11, ":1232 p3232");
 
           var phenoX = 400;
-          var phenoY = 40;
+          var phenoY = 35;
           dwObjects.phenoCircle = dv.append('circle')
             .attr('cx', phenoX - 10)
             .attr('cy', phenoY - 5);
@@ -741,7 +741,7 @@
           dwObjects.phenoInheritance = drawText(phenoX, phenoY + 30, 11, "Inheritance: Autosomal Dominant");
 
           dwObjects.geneTitleBar = dv.append('rect')
-            .attr('x', geneX -5)
+            .attr('x', geneX - 5)
             .attr('y', 0)
             .attr('width', 200)
             .attr({'fill':'orange', 'opacity': '0.5'});
