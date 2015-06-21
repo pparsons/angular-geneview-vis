@@ -254,10 +254,14 @@
             return d.gene.symbol;
           });
 
-          genes.on('mouseover', function(d) {
-            geneTip.show(d, this);
-          })
-            .on('mouseout', geneTip.hide);
+          genes
+            .on('mouseover', function (d) {
+              geneTip.show(d, this);
+            })
+            .on('mouseout', geneTip.hide)
+            .on('click', function (d) {
+              updateDetailInfo({gene:d}, -1);
+            })
           //.on('contextmenu', d3.contextMenu(menu))
           //.on('mousedown', d3.contextMenu(menu));
 
@@ -443,7 +447,9 @@
           }
         }
 
+        //i is the index to the particular phenotype of a clustered set
         function updateDetailInfo(model, i) {
+          dwObjects.geneTitleBar.attr('height', 10);
 
           var gene = model.gene.gene;
           dwObjects.geneTitle.text(gene.symbol);
@@ -451,14 +457,24 @@
           dwObjects.geneDesc.text(gene.desc);
           dwObjects.geneLoci.text(gene.cytloc + ' [' + gene.start + ' - ' + gene.end + ']');
 
-          var pheno = model.phenotypes[i].phenotypeMap;
-          dwObjects.phenoSymbol.text(pheno.phenotype);
-          dwObjects.phenoCircle.attr('fill', getPhenoColor(pheno.phenotype)).attr('r', 5);
-          dwObjects.phenoType.text('Disorder: ' + getPhenoDisorderType(pheno.phenotype));
-          dwObjects.phenoInheritance.text('Inheritance: ' + (pheno.phenotypeInheritance === null ? "N/A" : pheno.phenotypeInheritance));
+          if(i >= 0) {
+            var pheno = model.phenotypes[i].phenotypeMap;
+            dwObjects.phenoSymbol.text(pheno.phenotype);
+            dwObjects.phenoCircle.attr('fill', getPhenoColor(pheno.phenotype)).attr('r', 5);
+            dwObjects.phenoType.text('Disorder: ' + getPhenoDisorderType(pheno.phenotype));
+            dwObjects.phenoInheritance.text('Inheritance: ' + (pheno.phenotypeInheritance === null ? "N/A" : pheno.phenotypeInheritance));
 
-          dwObjects.geneTitleBar.attr('height', 10);
-          dwObjects.phenoTitleBar.attr('height', 10);
+
+            dwObjects.phenoTitleBar.attr('height', 10);
+          } else {
+            //only gene is clicked, clear pheno texts
+            dwObjects.phenoSymbol.text("");
+            dwObjects.phenoCircle.attr("fill", "white");
+            dwObjects.phenoType.text("");
+            dwObjects.phenoInheritance.text("");
+            dwObjects.phenoTitleBar.attr('height', 0);
+
+          }
         }
 
         function drawPhenotypes(data, currentHeights) {
@@ -749,7 +765,7 @@
           dwObjects.phenoTitleBar = dv.append('rect')
             .attr('x', phenoX - 5)
             .attr('y', 0)
-            .attr('width', 150)
+            .attr('width', 200)
             .attr({'fill':'purple', 'opacity': '0.2'});
         }
 
