@@ -6,9 +6,10 @@
 	$start = filter_input(INPUT_GET, 'start', FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
 	$stop = filter_input(INPUT_GET, 'stop', FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
 
-	$id_url = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=gene&term=" . $chr ."[chr]+AND+"
+	$id_url = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=gene&term=" 
+		.$chr."[chr]+AND+"
 		.$start."[CHRPOS]:"
-		.$stop."[CHRPOS]+AND+human[ORGN]";
+		.$stop."[CHRPOS]+AND+human[ORGN]&retmax=1100";
 		
 	$res = simplexml_load_string(file_get_contents($id_url))->IdList->Id;
 	//print_r($res);
@@ -21,12 +22,11 @@
 	
 	$id_list = rtrim($id_list, ",");
 	
-	//print_r($id_list);
-	
 	$gene_url = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=gene&id=" . $id_list;
-	$res = simplexml_load_string(file_get_contents($gene_url));
-	
-	$res = $res->DocumentSummarySet->DocumentSummary;
+	$gene_results = simplexml_load_string(file_get_contents($gene_url));
+
+    
+	$res = $gene_results->DocumentSummarySet->DocumentSummary;
 	
 	class Result {
 		public $symbol = "";
@@ -58,8 +58,5 @@
 	}
 	
 	echo json_encode($results);
-	
-	
-
 	
 ?>
