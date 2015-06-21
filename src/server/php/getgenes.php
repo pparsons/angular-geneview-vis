@@ -9,7 +9,7 @@
 	$id_url = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=gene&term=" 
 		.$chr."[chr]+AND+"
 		.$start."[CHRPOS]:"
-		.$stop."[CHRPOS]+AND+human[ORGN]&retmax=1100";
+		.$stop."[CHRPOS]+AND+human[ORGN]&retmax=200";
 		
 	$res = simplexml_load_string(file_get_contents($id_url))->IdList->Id;
 	//print_r($res);
