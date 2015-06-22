@@ -22,12 +22,9 @@
 
 <div id="container">
 
-    <!--<chromosome id="chr1" chr="1" rel-size="false" axis="true" assembly="37" width='1000' height="20" mode="multi" centromere="dot" geneview-map="true">-->
-        <!--<div geneview show-status='true'></div>-->
-    <!--</chromosome>-->
     {{version}}
 
-    <chromosome id="chr5" chr="5" rel-size="false"
+    <chromosome id="chr20" chr="X" rel-size="false"
                 axis="true" assembly="37" width='1000' height="20"
                 mode="single"
                 centromere="dot" geneview-map="true">
@@ -36,13 +33,6 @@
 
         </geneview>
     </chromosome>
-
-
-
-
-    <!--<chromosome id="chrx" chr="X" rel-size="true" axis="true" assembly="37" width='1000' height="20" mode="single" centromere="dot" geneview-map="true">-->
-        <!--<div geneview show-status='false'></div>-->
-    <!--</chromosome>-->
 
 </div>
 
@@ -76,14 +66,13 @@
     <script src="src/js/services.js"></script>
     <script src="src/js/geneview.js"></script>
     <script src="src/js/articlecount.js"></script>
-    <script src="src/mixins.js"></script>
     <!------->
 
     <script>
 
-        var demoApp = angular.module('demoApp', ['angularChromosomeVis', 'angularGeneviewVis', 'cgBusy']);
+        var demoApp = angular.module('demoApp', ['angularChromosomeVis', 'geneview', 'cgBusy']);
 
-        demoApp.controller('mainCtrl', ['$scope', '$rootScope','version', function($scope, $rootScope, version) {
+        demoApp.controller('mainCtrl', ['$scope', '$rootScope','geneview.version', function($scope, $rootScope, version) {
 
             //api server address
             $rootScope.server = "localhost:9090";

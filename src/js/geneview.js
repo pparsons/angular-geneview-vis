@@ -2,7 +2,7 @@
 (function () {
   "use strict";
   angular
-    .module('angularGeneviewVis')
+    .module('geneview')
     .directive('geneview', ['geneLoader', 'phenotypeLoader', 'articleStatLoader', 'geneManager', function (geneLoader, phenotypeLoader, articleStatLoader, geneManager) {
 
       function link(scope, element, attrs, chrAPI) {
@@ -261,7 +261,7 @@
             .on('mouseout', geneTip.hide)
             .on('click', function (d) {
               updateDetailInfo({gene:d}, -1);
-            })
+            });
           //.on('contextmenu', d3.contextMenu(menu))
           //.on('mousedown', d3.contextMenu(menu));
 
