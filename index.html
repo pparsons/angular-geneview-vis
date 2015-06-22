@@ -29,7 +29,7 @@
                 mode="single"
                 centromere="dot" geneview-map="true">
 
-        <geneview show-status="true" article-stats="false" phenotypes="true" detail-window="true">
+        <geneview show-status="true" article-stats="false" phenotypes="false" detail-window="true">
 
         </geneview>
     </chromosome>
@@ -70,10 +70,13 @@
 
     <script>
 
-        var demoApp = angular.module('demoApp', ['angularChromosomeVis', 'geneview', 'cgBusy']);
+        var demoApp = angular.module('demoApp', ['angularChromosomeVis', 'geneview', 'cgBusy'])
+                .config(['geneview.configProvider', function(gvConfig) {
+                    gvConfig.setServer("localhost:9090/soscip/api");
+                }]);
 
         demoApp.controller('mainCtrl', ['$scope', '$rootScope','geneview.version', function($scope, $rootScope, version) {
-
+            console.log('controller');
             //api server address
             $rootScope.server = "localhost:9090";
             $scope.version = version;
