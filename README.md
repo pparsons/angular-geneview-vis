@@ -10,7 +10,7 @@ Start web server for development:
 Directory must contain /soscip/api/ directory
 
 ```
-php -S 127.0.0.1:9090 -t .
+php -S 127.0.0.1:9090 -t ./src/server/php
 ```
 
 # Build
