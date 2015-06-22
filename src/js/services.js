@@ -119,12 +119,12 @@
     }])
 
     //return array of promisses containing phenotype info
-    .factory('phenotypeLoader', ['$q', '$http', '$rootScope', function ($q, $http, $rootScope) {
+    .factory('phenotypeLoader', ['$q', '$http', "geneview.config", function ($q, $http, config) {
       var http = {
         omim: function (gene) {
           return $http({
             method: 'get',
-            url: '//' + $rootScope.server + '/soscip/api/gen2phen.php',
+            url: '//' + config.server + '/gen2phen.php',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
             params: {'gene': gene}
           });
