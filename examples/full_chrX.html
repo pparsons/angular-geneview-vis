@@ -22,7 +22,7 @@
 
 <div id="container">
 
-    {{version}}
+    Current Version: {{version}}
 
     <chromosome id="chr20" chr="X" rel-size="false"
                 axis="true" assembly="37" width='1000' height="20"
@@ -75,12 +75,9 @@
                     gvConfig.setServer("localhost:9090/soscip/api");
                 }]);
 
-        demoApp.controller('mainCtrl', ['$scope', '$rootScope','geneview.version', function($scope, $rootScope, version) {
-            console.log('controller');
-            //api server address
-            $rootScope.server = "localhost:9090";
-            $scope.version = version;
+        demoApp.controller('mainCtrl', ['$scope','geneview.version', function($scope, version) {
 
+            $scope.version = version;
 
         }]);
 
