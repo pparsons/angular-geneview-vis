@@ -404,6 +404,7 @@
         }
 
         function preprocessPhenoData(response) {
+          var dataSet = [];
           //remove empty results from promise resolutions
           var res = response.filter(function (e) {
             return e === null ? false : true;
@@ -414,7 +415,6 @@
 
             //console.log(res);
             //console.log(res);
-            var dataSet = [];
             for (var i = 0; i < res.length; i++) {
 
               var geneSymbol = res[i].symbol.toUpperCase();
@@ -442,9 +442,8 @@
               }
               return 0;
             });
-            //console.log(dataSet);
-            return dataSet;
           }
+          return dataSet;
         }
 
         //i is the index to the particular phenotype of a clustered set
