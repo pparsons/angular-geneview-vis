@@ -2,15 +2,12 @@
 (function () {
   "use strict";
   angular
-    .module('angularGeneviewVis')
+    .module('geneview')
     //Load genes based on chromosome start and end location
-    .factory('geneLoader', ['$http', '$rootScope', function ($http, $rootScope) {
-      //this way will work inside the cytoApp
-      var serverScriptAddr = $rootScope.server + '/soscip/api/getgenes.php?';
+    .factory('geneLoader', ['$http', "geneview.config", function ($http, config) {
+
       return {
         getGenes: function (chr, start, stop, callID, cb) {
-          //var url = serverScriptAddr + 'chr=' + chr + '&start=' + start + '&stop=' + stop;
-
           var params = {
             chr: chr,
             start: start,
@@ -19,7 +16,7 @@
 
           return $http({
             method: 'GET',
-            url: '//' + $rootScope.server + '/soscip/api/getgenes.php',
+            url: '//' + config.server + '/getgenes.php',
             params: params,
             responseType: 'json',
             cache: true
@@ -122,12 +119,12 @@
     }])
 
     //return array of promisses containing phenotype info
-    .factory('phenotypeLoader', ['$q', '$http', '$rootScope', function ($q, $http, $rootScope) {
+    .factory('phenotypeLoader', ['$q', '$http', "geneview.config", function ($q, $http, config) {
       var http = {
         omim: function (gene) {
           return $http({
             method: 'get',
-            url: '//' + $rootScope.server + '/soscip/api/gen2phen.php',
+            url: '//' + config.server + '/gen2phen.php',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
             params: {'gene': gene}
           });

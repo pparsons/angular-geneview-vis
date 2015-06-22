@@ -2,7 +2,7 @@
 (function () {
   "use strict";
   angular
-    .module('angularGeneviewVis')
+    .module('geneview')
     .directive('articleView', ['articleStatLoader', function (articleStatLoader) {
       return {
         restrict: 'AE',

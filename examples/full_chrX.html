@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html ng-app="demoApp">
+<head>
+	<title>geneview-vis demo page</title>
+	
+	<link rel="stylesheet" href="../bower_components/angular-chromosome-vis/angular-chromosome-vis.css" />
+    <link rel="stylesheet" href="../src/angular-geneview-vis.css" />
+    <link rel="stylesheet" href="../bower_components/angular-busy/dist/angular-busy.min.css" />
+    <link rel="stylesheet" href="../bower_components/d3-context-menu/css/d3-context-menu.css"/>
+
+    <style>
+
+        #container{
+            margin:auto;
+            width: 1000px;
+        }
+    </style>
+</head>
+
+
+<body ng-controller="mainCtrl">
+
+<div id="container">
+
+    Current Version: {{version}}
+
+    <chromosome id="chr20" chr="X" rel-size="false"
+                axis="true" assembly="37" width='1000' height="20"
+                mode="single"
+                centromere="dot" geneview-map="true">
+
+        <geneview show-status="true" article-stats="false" phenotypes="true" detail-window="true">
+
+        </geneview>
+    </chromosome>
+
+</div>
+
+
+
+    <br/>
+    <!--<div geneview chr="{{chr}}" start="start" stop="stop" height="120" width="900" show-status-bar=false band-Model="bandModel"></div>-->
+
+
+
+	<!-- JS Script Dependencies -->
+	<script src="../bower_components/angular/angular.min.js"></script>
+	<script src="../bower_components/d3/d3.min.js"></script>
+	<script src="../bower_components/underscore/underscore-min.js"></script>
+    <script src="../bower_components/d3-context-menu/js/d3-context-menu.js"></script>
+
+
+	<!--<script src="bower_components/angular-chromosome-vis/angular-chromosome-vis.js"></script>-->
+    <script src="../angular-chromosome-vis.js"></script>
+	<script src="../bower_components/jsdas/jsdas.min.js"></script>
+    <script src="../bower_components/angular-busy/dist/angular-busy.js"></script>
+
+    <script src="../bower_components/d3-tip/index.js"></script>
+
+    <!--Geneview script dependencies-->
+    <!--For Release-->
+    <script src="../dist/angular-geneview-vis.min.js"></script>
+
+    <!--&lt;!&ndash;For Development&ndash;&gt;-->
+    <!--<script src="../src/js/index.js"></script>-->
+    <!--<script src="../src/js/services.js"></script>-->
+    <!--<script src="../src/js/geneview.js"></script>-->
+    <!--<script src="../src/js/articlecount.js"></script>-->
+    <!------->
+
+    <script>
+
+        var demoApp = angular.module('demoApp', ['angularChromosomeVis', 'geneview', 'cgBusy'])
+                .config(['geneview.configProvider', function(gvConfig) {
+                    gvConfig.setServer("localhost:9090");
+                }]);
+
+        demoApp.controller('mainCtrl', ['$scope','geneview.version', function($scope, version) {
+
+            $scope.version = version;
+
+        }]);
+
+    </script>
+</body>
+</html>

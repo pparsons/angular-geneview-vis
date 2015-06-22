@@ -2,7 +2,7 @@
 (function () {
   "use strict";
   angular
-    .module('angularGeneviewVis')
+    .module('geneview')
     .directive('geneview', ['geneLoader', 'phenotypeLoader', 'articleStatLoader', 'geneManager', function (geneLoader, phenotypeLoader, articleStatLoader, geneManager) {
 
       function link(scope, element, attrs, chrAPI) {
@@ -254,10 +254,14 @@
             return d.gene.symbol;
           });
 
-          genes.on('mouseover', function(d) {
-            geneTip.show(d, this);
-          })
-            .on('mouseout', geneTip.hide);
+          genes
+            .on('mouseover', function (d) {
+              geneTip.show(d, this);
+            })
+            .on('mouseout', geneTip.hide)
+            .on('click', function (d) {
+              updateDetailInfo({gene:d}, -1);
+            });
           //.on('contextmenu', d3.contextMenu(menu))
           //.on('mousedown', d3.contextMenu(menu));
 
@@ -400,6 +404,7 @@
         }
 
         function preprocessPhenoData(response) {
+          var dataSet = [];
           //remove empty results from promise resolutions
           var res = response.filter(function (e) {
             return e === null ? false : true;
@@ -410,7 +415,6 @@
 
             //console.log(res);
             //console.log(res);
-            var dataSet = [];
             for (var i = 0; i < res.length; i++) {
 
               var geneSymbol = res[i].symbol.toUpperCase();
@@ -438,12 +442,13 @@
               }
               return 0;
             });
-            //console.log(dataSet);
-            return dataSet;
           }
+          return dataSet;
         }
 
+        //i is the index to the particular phenotype of a clustered set
         function updateDetailInfo(model, i) {
+          dwObjects.geneTitleBar.attr('height', 10);
 
           var gene = model.gene.gene;
           dwObjects.geneTitle.text(gene.symbol);
@@ -451,14 +456,24 @@
           dwObjects.geneDesc.text(gene.desc);
           dwObjects.geneLoci.text(gene.cytloc + ' [' + gene.start + ' - ' + gene.end + ']');
 
-          var pheno = model.phenotypes[i].phenotypeMap;
-          dwObjects.phenoSymbol.text(pheno.phenotype);
-          dwObjects.phenoCircle.attr('fill', getPhenoColor(pheno.phenotype)).attr('r', 5);
-          dwObjects.phenoType.text('Disorder: ' + getPhenoDisorderType(pheno.phenotype));
-          dwObjects.phenoInheritance.text('Inheritance: ' + (pheno.phenotypeInheritance === null ? "N/A" : pheno.phenotypeInheritance));
+          if(i >= 0) {
+            var pheno = model.phenotypes[i].phenotypeMap;
+            dwObjects.phenoSymbol.text(pheno.phenotype);
+            dwObjects.phenoCircle.attr('fill', getPhenoColor(pheno.phenotype)).attr('r', 5);
+            dwObjects.phenoType.text('Disorder: ' + getPhenoDisorderType(pheno.phenotype));
+            dwObjects.phenoInheritance.text('Inheritance: ' + (pheno.phenotypeInheritance === null ? "N/A" : pheno.phenotypeInheritance));
 
-          dwObjects.geneTitleBar.attr('height', 20);
-          dwObjects.phenoTitleBar.attr('height', 20);
+
+            dwObjects.phenoTitleBar.attr('height', 10);
+          } else {
+            //only gene is clicked, clear pheno texts
+            dwObjects.phenoSymbol.text("");
+            dwObjects.phenoCircle.attr("fill", "white");
+            dwObjects.phenoType.text("");
+            dwObjects.phenoInheritance.text("");
+            dwObjects.phenoTitleBar.attr('height', 0);
+
+          }
         }
 
         function drawPhenotypes(data, currentHeights) {
@@ -723,7 +738,7 @@
           }
 
           var geneX = 20;
-          var geneY = 40;
+          var geneY = 35;
           dwObjects.geneTitle = drawText(geneX, geneY, 15, "GHR");
 
           dwObjects.geneSynonyms = drawText(geneX, geneY + 15, 11, "GHAR, ADER");
@@ -731,7 +746,7 @@
           dwObjects.geneLoci = drawText(geneX, geneY + 50, 11, ":1232 p3232");
 
           var phenoX = 400;
-          var phenoY = 40;
+          var phenoY = 35;
           dwObjects.phenoCircle = dv.append('circle')
             .attr('cx', phenoX - 10)
             .attr('cy', phenoY - 5);
@@ -741,7 +756,7 @@
           dwObjects.phenoInheritance = drawText(phenoX, phenoY + 30, 11, "Inheritance: Autosomal Dominant");
 
           dwObjects.geneTitleBar = dv.append('rect')
-            .attr('x', geneX -5)
+            .attr('x', geneX - 5)
             .attr('y', 0)
             .attr('width', 200)
             .attr({'fill':'orange', 'opacity': '0.5'});
@@ -749,7 +764,7 @@
           dwObjects.phenoTitleBar = dv.append('rect')
             .attr('x', phenoX - 5)
             .attr('y', 0)
-            .attr('width', 150)
+            .attr('width', 200)
             .attr({'fill':'purple', 'opacity': '0.2'});
         }
 
@@ -852,7 +867,7 @@
           phenotypes: '@',
           detailWindow: '@'
         },
-        templateUrl: 'src/geneview-template.html'
+        templateUrl: '../src/geneview-template.html'
       };
     }]);
 
