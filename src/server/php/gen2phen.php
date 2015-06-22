@@ -1,4 +1,7 @@
 <?php
+
+header('Access-Control-Allow-Origin: *');
+
 /*
 php endpoint for cytognomix/jbrowse page
 March 2015
