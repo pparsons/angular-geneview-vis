@@ -867,7 +867,7 @@
           phenotypes: '@',
           detailWindow: '@'
         },
-        templateUrl: 'src/geneview-template.html'
+        templateUrl: '../src/geneview-template.html'
       };
     }]);
 
