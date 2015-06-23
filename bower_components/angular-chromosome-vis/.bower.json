@@ -1,0 +1,51 @@
+{
+  "name": "angular-chromosome-vis",
+  "version": "1.1.9",
+  "authors": [
+    "Paul Parsons <paulparsons@gmail.com>",
+    "Joe Lin <linjoeyy@gmail.com"
+  ],
+  "description": "angular directive for interactive visual chromosome representation",
+  "homepage": "http://pparsons.github.io/angular-chromosome-vis/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pparsons/angular-chromosome-vis"
+  },
+  "main": [
+    "angular-chromosome-vis.js",
+    "angular-chromosome-vis.css"
+  ],
+  "keywords": [
+    "chromosome",
+    "genetics",
+    "karytope",
+    "ideogram",
+    "angularjs",
+    "javascript",
+    "visualization",
+    "directive"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components"
+  ],
+  "devDependencies": {},
+  "dependencies": {
+    "d3": ">=3.5.5",
+    "angular": ">=1.4.0",
+    "jsdas": "~1.0.2",
+    "underscore": ">=1.8.3",
+    "d3-context-menu": "*"
+  },
+  "_release": "1.1.9",
+  "_resolution": {
+    "type": "version",
+    "tag": "v1.1.9",
+    "commit": "13d63443482aba5d2d9bd1c90347b9f670890c41"
+  },
+  "_source": "git://github.com/pparsons/angular-chromosome-vis.git",
+  "_target": "1.1.9",
+  "_originalSource": "angular-chromosome-vis"
+}

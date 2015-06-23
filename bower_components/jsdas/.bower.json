@@ -1,0 +1,33 @@
+{
+  "name": "jsdas",
+  "version": "1.0.2",
+  "authors": [
+    "see https://code.google.com/p/jsdas/people/list"
+  ],
+  "description": "Javascript client library for the Distributed Annotation System",
+  "main": "jsdas.min.js",
+  "keywords": [
+    "javascript",
+    "das",
+    "annotations",
+    "biology"
+  ],
+  "license": "GNU Lesser GPL",
+  "homepage": "https://code.google.com/p/jsdas/",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "_release": "1.0.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "v1.0.2",
+    "commit": "0d505eee40f389c2c410daa3775f912584665cbb"
+  },
+  "_source": "git://github.com/pparsons/jsdas.git",
+  "_target": "~1.0.2",
+  "_originalSource": "jsdas"
+}

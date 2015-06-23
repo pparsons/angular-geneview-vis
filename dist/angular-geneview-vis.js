@@ -37,7 +37,7 @@
 
           return $http({
             method: 'GET',
-            url: '//' + config.server + '/getgenes.php',
+            url: config.server + '/getgenes.php',
             params: params,
             responseType: 'json',
             cache: true
@@ -67,13 +67,19 @@
       //Get the next available track to display the gene without overlapping others
       function findFreeTrack(start, stop) {
         var trackNo = 0;
+        var collide;
         for (var i = 0; i < geneDB.length; i++) {
+          collide = false;
           for (var j = 0; j < geneDB[i].length; j++) {
             var gene = geneDB[i][j];
             if (gene.stop >= start && gene.start <= stop) {
               trackNo++;
+              collide = true;
               break;
             }
+          }
+          if(!collide) {
+            return trackNo;
           }
         }
         return trackNo;
@@ -1120,7 +1126,8 @@
           phenotypes: '@',
           detailWindow: '@'
         },
-        templateUrl: '../src/geneview-template.html'
+        template: "<div class='angular-geneview-vis' ng-show='displayGeneview' cg-busy='{promise:geneLoadPromise, message:&quot; Retrieving Data &quot;}'></div>"
+        //templateUrl: '../src/geneview-template.html'
       };
     }]);
 
