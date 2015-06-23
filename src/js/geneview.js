@@ -867,7 +867,8 @@
           phenotypes: '@',
           detailWindow: '@'
         },
-        templateUrl: '../src/geneview-template.html'
+        template: "<div class='angular-geneview-vis' ng-show='displayGeneview' cg-busy='{promise:geneLoadPromise, message:&quot; Retrieving Data &quot;}'></div>"
+        //templateUrl: '../src/geneview-template.html'
       };
     }]);
 

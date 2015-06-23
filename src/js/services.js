@@ -46,13 +46,19 @@
       //Get the next available track to display the gene without overlapping others
       function findFreeTrack(start, stop) {
         var trackNo = 0;
+        var collide;
         for (var i = 0; i < geneDB.length; i++) {
+          collide = false;
           for (var j = 0; j < geneDB[i].length; j++) {
             var gene = geneDB[i][j];
             if (gene.stop >= start && gene.start <= stop) {
               trackNo++;
+              collide = true;
               break;
             }
+          }
+          if(!collide) {
+            return trackNo;
           }
         }
         return trackNo;
