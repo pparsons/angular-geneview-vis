@@ -16,7 +16,7 @@
 
           return $http({
             method: 'GET',
-            url: config.server + '/getgenes.php',
+            url: '//' + config.server + '/getgenes.php',
             params: params,
             responseType: 'json',
             cache: true
