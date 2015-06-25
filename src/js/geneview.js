@@ -676,7 +676,6 @@
 
         //i is the index to the particular phenotype of a clustered set
         function updateDetailInfo(model, i) {
-          //dwObjects.geneTitleBar.attr('height', 10);
 
           var gene = model.gene.gene;
           dwObjects.geneTitle.text(gene.symbol);
@@ -691,24 +690,18 @@
               .on('click', function() {
                 config.phenotypeClickAction(pheno);
               });
-            //dwObjects.phenoCircle.attr('fill', getPhenoColor(pheno.phenotype)).attr('r', 7);
+
             dwObjects.phenoType.text('Disorder: ' + getPhenoDisorderType(pheno.phenotype));
             dwObjects.phenoInheritance.text('Inheritance: ' + (pheno.phenotypeInheritance === null ? "N/A" : pheno.phenotypeInheritance));
             //dwObjects.cline.style('stroke', 'black');
             dwObjects.rrect.style('fill', getPhenoColor(pheno.phenotype));
-            dwObjects.rrect.attr('width', 20);
-            //dwObjects.rrect.style('stroke', getPhenoColor(pheno.phenotype))
+            dwObjects.rrect.attr('width', 15);
 
-
-            //dwObjects.phenoTitleBar.attr('height', 10).attr('fill', getPhenoColor(pheno.phenotype));
           } else {
             //only gene is clicked, clear pheno texts
             dwObjects.phenoSymbol.text("");
-            //dwObjects.phenoCircle.attr("fill", "white");
             dwObjects.phenoType.text("");
             dwObjects.phenoInheritance.text("");
-            //dwObjects.phenoTitleBar.attr('height', 0);
-            //dwObjects.cline.style('stroke', 'white');
             dwObjects.rrect.attr('width', 0);
 
           }
@@ -730,20 +723,16 @@
 
           var geneX = 35;
           var geneY = 30;
-          var phenoX = 420;
+          var phenoX = 430;
           var phenoY = 30;
-          var liney = 8;
 
           dwObjects.lrect = dv.append('rect')
             .attr('x', 0)
             .attr('y', 0)
-            .attr('width', 20)
+            .attr('width', 15)
             .attr('height', DETAIL_WIN_HEIGHT - 20)
             .style('fill', '#ffb006')
-            //.style('stroke', '#ffb006')
-            //.style('stroke-width', 4)
-            //.style('opacity', '1')
-            .style('fill', 'white')
+            .style('fill', 'white');
 
 
           dwObjects.geneTitle = drawText(geneX, geneY, 15, "GHR")
@@ -767,16 +756,6 @@
           dwObjects.geneDesc = drawText(geneX, geneY + 35, 11, "long dexcla;ksdjf;lask ");
           dwObjects.geneLoci = drawText(geneX, geneY + 50, 11, ":1232 p3232");
 
-          //dwObjects.cline = dv.append('line')
-          //  .attr('x1', geneX + 200 - 5)
-          //  .attr('y1', liney)
-          //  .attr('x2', phenoX)
-          //  .attr('y2', liney)
-          //  .style('stroke-width', '1');
-
-          //dwObjects.phenoCircle = dv.append('circle')
-          //  .attr('cx', phenoX + 5)
-          //  .attr('cy', 8);
 
           dwObjects.phenoSymbol = drawText(phenoX , phenoY, 15, "Mental retardation, autosoman recessive")
             .on('mouseover', function () {
@@ -790,26 +769,12 @@
           dwObjects.phenoInheritance = drawText(phenoX, phenoY + 35, 11, "Inheritance: Autosomal Dominant");
 
           dwObjects.rrect = dv.append('rect')
-            .attr('x', phenoX - 40)
+            .attr('x', phenoX - 35)
             .attr('y', 0)
-            .attr('width', 20)
+            .attr('width', 15)
             .attr('height', DETAIL_WIN_HEIGHT - 20)
-            //.style('stroke')
-            //.style('stroke-width', 4)
-            .style('fill', 'white')
-          //.style('fill', 'green')
-          //.style('opacity', '1')
+            .style('fill', 'white');
 
-          //dwObjects.geneTitleBar = dv.append('rect')
-          //  .attr('x', geneX - 5)
-          //  .attr('y', 0)
-          //  .attr('width', 200)
-          //  .attr({'fill':'orange', 'opacity': '0.5'});
-          //
-          //dwObjects.phenoTitleBar = dv.append('rect')
-          //  .attr('x', phenoX - 5)
-          //  .attr('y', 0)
-          //  .attr('width', 200);
         }
 
         //Create unique callid for each http request.
