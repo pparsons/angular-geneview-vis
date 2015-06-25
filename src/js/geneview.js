@@ -40,7 +40,6 @@
           scope.render();
         });
 
-
         var init = function () {
           var selectionModel = chrAPI.getActiveSelection();
           var chrConfigs = chrAPI.getAttrs();
@@ -427,40 +426,6 @@
           return dataSet;
         }
 
-        //i is the index to the particular phenotype of a clustered set
-        function updateDetailInfo(model, i) {
-          dwObjects.geneTitleBar.attr('height', 10);
-
-          var gene = model.gene.gene;
-          dwObjects.geneTitle.text(gene.symbol);
-          dwObjects.geneSynonyms.text(gene.synonyms);
-          dwObjects.geneDesc.text(gene.desc);
-          dwObjects.geneLoci.text(gene.cytloc + ' [' + gene.start + ' - ' + gene.end + ']');
-
-          if(i >= 0) {
-            var pheno = model.phenotypes[i].phenotypeMap;
-            dwObjects.phenoSymbol.text(pheno.phenotype)
-              .on('click', function() {
-                config.phenotypeClickAction(pheno);
-              });
-            dwObjects.phenoCircle.attr('fill', getPhenoColor(pheno.phenotype)).attr('r', 5);
-            dwObjects.phenoType.text('Disorder: ' + getPhenoDisorderType(pheno.phenotype));
-            dwObjects.phenoInheritance.text('Inheritance: ' + (pheno.phenotypeInheritance === null ? "N/A" : pheno.phenotypeInheritance));
-
-
-            dwObjects.phenoTitleBar.attr('height', 10);
-          } else {
-            //only gene is clicked, clear pheno texts
-            dwObjects.phenoSymbol.text("");
-            dwObjects.phenoCircle.attr("fill", "white");
-            dwObjects.phenoType.text("");
-            dwObjects.phenoInheritance.text("");
-            dwObjects.phenoTitleBar.attr('height', 0);
-
-          }
-        }
-
-
         function blackText() {
           d3.select(this)
             .style('cursor', 'default')
@@ -709,6 +674,40 @@
 
         var dwObjects = {};
 
+        //i is the index to the particular phenotype of a clustered set
+        function updateDetailInfo(model, i) {
+          dwObjects.geneTitleBar.attr('height', 15);
+
+          var gene = model.gene.gene;
+          dwObjects.geneTitle.text(gene.symbol);
+          dwObjects.geneSynonyms.text(gene.synonyms);
+          dwObjects.geneDesc.text(gene.desc);
+          dwObjects.geneLoci.text(gene.cytloc + ' [' + gene.start + ' - ' + gene.end + ']');
+
+          if(i >= 0) {
+            var pheno = model.phenotypes[i].phenotypeMap;
+            dwObjects.phenoSymbol.text(pheno.phenotype)
+              .on('click', function() {
+                config.phenotypeClickAction(pheno);
+              });
+            dwObjects.phenoCircle.attr('fill', getPhenoColor(pheno.phenotype)).attr('r', 7);
+            dwObjects.phenoType.text('Disorder: ' + getPhenoDisorderType(pheno.phenotype));
+            dwObjects.phenoInheritance.text('Inheritance: ' + (pheno.phenotypeInheritance === null ? "N/A" : pheno.phenotypeInheritance));
+            dwObjects.cline.style('stroke', 'black');
+
+            //dwObjects.phenoTitleBar.attr('height', 10).attr('fill', getPhenoColor(pheno.phenotype));
+          } else {
+            //only gene is clicked, clear pheno texts
+            dwObjects.phenoSymbol.text("");
+            dwObjects.phenoCircle.attr("fill", "white");
+            dwObjects.phenoType.text("");
+            dwObjects.phenoInheritance.text("");
+            //dwObjects.phenoTitleBar.attr('height', 0);
+            dwObjects.cline.style('stroke', 'white');
+
+          }
+        }
+
         function drawDetailWindow() {
           var dv = svgTarget.append('g')
             .attr('transform', 'translate(0,' + (currentHeights.fullSVGHeight - DETAIL_WIN_HEIGHT)+")");
@@ -725,6 +724,10 @@
 
           var geneX = 20;
           var geneY = 35;
+          var phenoX = 400;
+          var phenoY = 35;
+          var liney = 8;
+
           dwObjects.geneTitle = drawText(geneX, geneY, 15, "GHR")
             .on('mouseover', function () {
               highlightText.call(this);
@@ -746,11 +749,16 @@
           dwObjects.geneDesc = drawText(geneX, geneY + 35, 11, "long dexcla;ksdjf;lask ");
           dwObjects.geneLoci = drawText(geneX, geneY + 50, 11, ":1232 p3232");
 
-          var phenoX = 400;
-          var phenoY = 35;
+          dwObjects.cline = dv.append('line')
+            .attr('x1', geneX + 200 - 5)
+            .attr('y1', liney)
+            .attr('x2', phenoX)
+            .attr('y2', liney)
+            .style('stroke-width', '1');
+
           dwObjects.phenoCircle = dv.append('circle')
-            .attr('cx', phenoX - 10)
-            .attr('cy', phenoY - 5);
+            .attr('cx', phenoX + 5)
+            .attr('cy', 8);
 
           dwObjects.phenoSymbol = drawText(phenoX , phenoY, 13, "Mental retardation, autosoman recessive")
             .on('mouseover', function () {
@@ -769,11 +777,10 @@
             .attr('width', 200)
             .attr({'fill':'orange', 'opacity': '0.5'});
 
-          dwObjects.phenoTitleBar = dv.append('rect')
-            .attr('x', phenoX - 5)
-            .attr('y', 0)
-            .attr('width', 200)
-            .attr({'fill':'purple', 'opacity': '0.2'});
+          //dwObjects.phenoTitleBar = dv.append('rect')
+          //  .attr('x', phenoX - 5)
+          //  .attr('y', 0)
+          //  .attr('width', 200);
         }
 
         //Create unique callid for each http request.
