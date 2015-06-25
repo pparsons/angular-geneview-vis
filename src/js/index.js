@@ -1,4 +1,3 @@
-/*global angular, d3*/
 
 (function () {
   "use strict";
@@ -9,6 +8,10 @@
 
       this.setServer = function(newServer) {
         this.server = newServer;
+      };
+
+      this.setGeneAction = function(actionArg) {
+        this.geneAction = actionArg;
       };
 
       this.$get = function() {

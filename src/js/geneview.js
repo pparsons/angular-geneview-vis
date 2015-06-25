@@ -3,7 +3,7 @@
   "use strict";
   angular
     .module('geneview')
-    .directive('geneview', ['geneLoader', 'phenotypeLoader', 'articleStatLoader', 'geneManager', function (geneLoader, phenotypeLoader, articleStatLoader, geneManager) {
+    .directive('geneview', ['geneview.config','geneLoader', 'phenotypeLoader', 'articleStatLoader', 'geneManager', function (config, geneLoader, phenotypeLoader, articleStatLoader, geneManager) {
 
       function link(scope, element, attrs, chrAPI) {
 
@@ -476,6 +476,19 @@
           }
         }
 
+
+        function blackText() {
+          d3.select(this)
+            .style('cursor', 'default')
+            .style('fill', 'black');
+        }
+
+        function highlightText() {
+          d3.select(this)
+            .style('cursor', 'pointer')
+            .style('fill', 'steelblue');
+        }
+
         function drawPhenotypes(data, currentHeights) {
           var totalPhenotypes = 0;
 
@@ -534,16 +547,6 @@
                 var domgene = svgTarget.select('#gene_' + geneData.gene.symbol)[0][0];
 
 
-                function blackText() {
-                  d3.select(this)
-                    .attr('style', 'cursor: default; fill:black;');
-                }
-
-                function highlightText() {
-                  d3.select(this)
-                    .attr('style', 'cursor: pointer; fill:steelblue;');
-                }
-
                 function hideDetails(i) {
 
                   phenoTip.hide();
@@ -583,7 +586,7 @@
                     function makeItem(title, i) {
                       return {
                         title: title,
-                        action: function() { updateDetailInfo(d, i)}
+                        action: function() { updateDetailInfo(d, i); }
                       };
                     }
 
@@ -732,14 +735,34 @@
             return dv.append('text')
               .style('font-size', size + 'px')
               .attr('x', x)
-              .attr('y', y)
+              .attr('y', y);
               //.text(testtext);
+          }
+
+          function linkClickBehaviour() {
+            this
+              .on('mouseover', function () {
+                highlightText.call(this);
+              })
+              .on('mouseout', function () {
+                blackText.call(this);
+              })
+              .on('click', function () {
+                var title = d3.select(this).text();
+                var d = geneDB[title].gene;
+
+                if(typeof config.geneAction === 'function') {
+
+                  config.geneAction(d);
+                }
+              });
 
           }
 
           var geneX = 20;
           var geneY = 35;
           dwObjects.geneTitle = drawText(geneX, geneY, 15, "GHR");
+          linkClickBehaviour.call(dwObjects.geneTitle);
 
           dwObjects.geneSynonyms = drawText(geneX, geneY + 15, 11, "GHAR, ADER");
           dwObjects.geneDesc = drawText(geneX, geneY + 35, 11, "long dexcla;ksdjf;lask ");
