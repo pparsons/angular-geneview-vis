@@ -24,7 +24,7 @@
 
     Current Version: {{version}}
 
-    <chromosome id="chr20" chr="X" rel-size="false"
+    <chromosome id="chr20" chr="1" rel-size="false"
                 axis="true" assembly="37" width='1000' height="20"
                 mode="single"
                 centromere="dot" geneview-map="true">
@@ -69,9 +69,21 @@
 
     <script>
 
+        function testGeneFunc(d) {
+            console.log("testMenu", d);
+        }
+
+//        var geneMenu = {
+//            "title": "Log Info",
+//            "action" : function (elem, d, i) {
+//                console.log(d);
+//            }
+//        }
+
         var demoApp = angular.module('demoApp', ['angularChromosomeVis', 'geneview', 'cgBusy'])
                 .config(['geneview.configProvider', function(gvConfig) {
                     gvConfig.setServer("peaceful-citadel-6962.herokuapp.com");
+                    gvConfig.setGeneAction(testGeneFunc);
                 }]);
 
         demoApp.controller('mainCtrl', ['$scope','geneview.version', function($scope, version) {
