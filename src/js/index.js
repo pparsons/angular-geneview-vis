@@ -10,8 +10,12 @@
         this.server = newServer;
       };
 
-      this.setGeneAction = function(actionArg) {
-        this.geneAction = actionArg;
+      this.setGeneClickAction = function(actionArg) {
+        this.geneClickAction = actionArg;
+      };
+
+      this.setPhenotypeClickAction = function(actionArg) {
+        this.phenotypeClickAction = actionArg;
       };
 
       this.$get = function() {
