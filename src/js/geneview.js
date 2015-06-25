@@ -676,16 +676,16 @@
           var p1 = p.charAt(0);
           //color according to
           if (p1 === '{') { //susceptibility
-            return "#CBBCDC";
+            return "#E9AEC8";
           }
           else if (p1 === '?') { //unconfirmed
-            return "#C1DE77";
+            return "#C5DB76";
           }
           else if (p1 === '[') { //nondisease
-            return "#83DEC1";
+            return "#C5DB76";
           }
           else {
-            return "#E6B273";
+            return "#9ECEE4";
           }
         }
 
