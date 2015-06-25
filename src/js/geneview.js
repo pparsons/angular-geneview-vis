@@ -199,25 +199,6 @@
 
         function drawGenes(geneDataSet) {
 
-          //var menu = [
-          //	{
-          //		title: 'View in genome browser',
-          //		action: function (elm, d, i) {
-          //			$state.go("user.genomeBrowser");
-          //			$rootScope.page = 3;
-          //			$rootScope.$apply();
-          //		}
-          //	},
-          //	{
-          //		title: 'Fetch related articles',
-          //		action: function (elm, d, i) {
-          //			$state.transitionTo('user.search', {'searchTerms': d.gene.symbol}, {
-          //				reload: false, inherit: false, notify: true, ignoreDsr: true
-          //			});
-          //		}
-          //	}
-          //];
-
           var genes = svgTarget.append('g')
             .attr('transform', 'translate(0,' + GENES_YSHIFT + ")")
             .selectAll('g')
@@ -458,7 +439,10 @@
 
           if(i >= 0) {
             var pheno = model.phenotypes[i].phenotypeMap;
-            dwObjects.phenoSymbol.text(pheno.phenotype);
+            dwObjects.phenoSymbol.text(pheno.phenotype)
+              .on('click', function() {
+                config.phenotypeClickAction(pheno);
+              });
             dwObjects.phenoCircle.attr('fill', getPhenoColor(pheno.phenotype)).attr('r', 5);
             dwObjects.phenoType.text('Disorder: ' + getPhenoDisorderType(pheno.phenotype));
             dwObjects.phenoInheritance.text('Inheritance: ' + (pheno.phenotypeInheritance === null ? "N/A" : pheno.phenotypeInheritance));
@@ -739,30 +723,24 @@
               //.text(testtext);
           }
 
-          function linkClickBehaviour() {
-            this
-              .on('mouseover', function () {
-                highlightText.call(this);
-              })
-              .on('mouseout', function () {
-                blackText.call(this);
-              })
-              .on('click', function () {
-                var title = d3.select(this).text();
-                var d = geneDB[title].gene;
-
-                if(typeof config.geneAction === 'function') {
-
-                  config.geneAction(d);
-                }
-              });
-
-          }
-
           var geneX = 20;
           var geneY = 35;
-          dwObjects.geneTitle = drawText(geneX, geneY, 15, "GHR");
-          linkClickBehaviour.call(dwObjects.geneTitle);
+          dwObjects.geneTitle = drawText(geneX, geneY, 15, "GHR")
+            .on('mouseover', function () {
+              highlightText.call(this);
+            })
+            .on('mouseout', function () {
+              blackText.call(this);
+            })
+            .on('click', function () {
+              var title = d3.select(this).text();
+              var d = geneDB[title].gene;
+
+              if(typeof config.geneClickAction === 'function') {
+
+                config.geneClickAction(d);
+              }
+            });
 
           dwObjects.geneSynonyms = drawText(geneX, geneY + 15, 11, "GHAR, ADER");
           dwObjects.geneDesc = drawText(geneX, geneY + 35, 11, "long dexcla;ksdjf;lask ");
@@ -774,7 +752,14 @@
             .attr('cx', phenoX - 10)
             .attr('cy', phenoY - 5);
 
-          dwObjects.phenoSymbol = drawText(phenoX , phenoY, 13, "Mental retardation, autosoman recessive");
+          dwObjects.phenoSymbol = drawText(phenoX , phenoY, 13, "Mental retardation, autosoman recessive")
+            .on('mouseover', function () {
+              highlightText.call(this);
+            })
+            .on('mouseout', function () {
+              blackText.call(this);
+            });
+
           dwObjects.phenoType = drawText(phenoX, phenoY + 15, 11, "Disorder: nondisease");
           dwObjects.phenoInheritance = drawText(phenoX, phenoY + 30, 11, "Inheritance: Autosomal Dominant");
 
