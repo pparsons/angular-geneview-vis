@@ -69,7 +69,7 @@
 
     <script>
 
-        function testGeneFunc(d) {
+        function logfn(d) {
             console.log("testMenu", d);
         }
 
@@ -83,7 +83,8 @@
         var demoApp = angular.module('demoApp', ['angularChromosomeVis', 'geneview', 'cgBusy'])
                 .config(['geneview.configProvider', function(gvConfig) {
                     gvConfig.setServer("peaceful-citadel-6962.herokuapp.com");
-                    gvConfig.setGeneAction(testGeneFunc);
+                    gvConfig.setGeneClickAction(logfn);
+                    gvConfig.setPhenotypeClickAction(logfn)
                 }]);
 
         demoApp.controller('mainCtrl', ['$scope','geneview.version', function($scope, version) {
