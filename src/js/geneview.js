@@ -757,7 +757,7 @@
           dwObjects.geneLoci = drawText(geneX, geneY + 50, 11, ":1232 p3232");
 
 
-          dwObjects.phenoSymbol = drawText(phenoX , phenoY, 15, "Mental retardation, autosoman recessive")
+          dwObjects.phenoSymbol = drawText(phenoX , phenoY, 13, "Mental retardation, autosoman recessive")
             .on('mouseover', function () {
               highlightText.call(this);
             })
@@ -765,8 +765,8 @@
               blackText.call(this);
             });
 
-          dwObjects.phenoType = drawText(phenoX, phenoY + 20, 11, "Disorder: nondisease");
-          dwObjects.phenoInheritance = drawText(phenoX, phenoY + 35, 11, "Inheritance: Autosomal Dominant");
+          dwObjects.phenoType = drawText(phenoX, phenoY + 15, 11, "Disorder: nondisease");
+          dwObjects.phenoInheritance = drawText(phenoX, phenoY + 30, 11, "Inheritance: Autosomal Dominant");
 
           dwObjects.rrect = dv.append('rect')
             .attr('x', phenoX - 35)
