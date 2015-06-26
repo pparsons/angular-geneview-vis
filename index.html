@@ -29,7 +29,7 @@
                 mode="single"
                 centromere="dot" geneview-map="true">
 
-        <geneview show-status="true" article-stats="false" phenotypes="true" detail-window="true">
+        <geneview show-status="true" article-stats="true" phenotypes="true" detail-window="true">
 
         </geneview>
     </chromosome>
@@ -75,8 +75,8 @@
                 gvConfig.setServer("peaceful-citadel-6962.herokuapp.com");
             }]);
 
-    demoApp.controller('mainCtrl', ['$scope','geneview.version', function($scope, version) {
-
+    demoApp.controller('mainCtrl', ['$scope','geneview.version','$rootScope', function($scope, version, $rootScope) {
+        $rootScope.server = 'localhost:9090';
         $scope.version = version;
 
     }]);

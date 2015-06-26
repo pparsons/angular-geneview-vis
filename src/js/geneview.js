@@ -32,7 +32,7 @@
         // Fixed one unit of height in px
           SD_1COL_HEIGHT = 20,
           GENES_YSHIFT = 34,
-          PHENOTYPES_HEIGHT = 225,
+          PHENOTYPES_HEIGHT = 180,
           DETAIL_WIN_HEIGHT = 130;
 
         //when selector has a new location
@@ -876,8 +876,8 @@
           phenotypes: '@',
           detailWindow: '@'
         },
-        template: "<div class='angular-geneview-vis' ng-show='displayGeneview' cg-busy='{promise:geneLoadPromise, message:&quot; Retrieving Data &quot;}'></div>"
-        //templateUrl: '../src/geneview-template.html'
+        //template: "<div class='angular-geneview-vis' ng-show='displayGeneview' cg-busy='{promise:geneLoadPromise, message:&quot; Retrieving Data &quot;}'></div>"
+        templateUrl: 'src/geneview-template.html'
       };
     }]);
 
