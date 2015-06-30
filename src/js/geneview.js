@@ -130,8 +130,6 @@
 
         var init = function () {
 
-
-
           var selectionModel = chr.getSelections();
 
           scope.displayGeneview = true;
@@ -248,17 +246,8 @@
             })
             .attr('y', 13)
             .style('fill', function(d) {
-              if(d.stain === "gpos") {
-                switch(d.density) {
-                  case "100":
-                  case "75":
-                    return "white";
-                  case "50":
-                  case "25":
-                    return "black";
-                }
-              }else if(d.stain ==="acen") {
-                return "white";
+              if(d.stain === "gpos" || +d.density > 50 || d.stain === "acen") {
+                return "#ededed";
               }
             });
 
@@ -800,19 +789,17 @@
           var gsa = gene.synonyms.split(', ');
           var desc = gene.desc.split(' ');
 
-          var gsy_1 = gsa.slice(0, 8).join(', ')
+          var gsy_1 = gsa.slice(0, 8).join(', ');
           var gsy_2 = gsa.slice(8, gsa.length).join(', ');
 
           var dsa_1 = desc.slice(0, 8).join(' ');
           var dsa_2 = desc.slice(8, desc.length).join(' ');
-          console.log(dsa_1, '^^',dsa_2)
 
+          dwObjects.gst1.text(gsy_1);
+          dwObjects.gst2.text(gsy_2);
 
-          dwObjects.gst1.text(gsy_1)
-          dwObjects.gst2.text(gsy_2)
-
-          dwObjects.gd1.text(dsa_1)
-          dwObjects.gd2.text(dsa_2)
+          dwObjects.gd1.text(dsa_1);
+          dwObjects.gd2.text(dsa_2);
 
           dwObjects.geneTitle.text(gene.symbol);
 
@@ -896,30 +883,29 @@
 
           dwObjects.gst1 = dwObjects.geneSynonyms.append('tspan')
             .attr('x', 0)
-            .attr('y', geneY)
+            .attr('y', geneY + 5)
             .attr('x','0')
-            .attr('dy', '1.2em')
+            .attr('dy', '1.2em');
           dwObjects.gst2 = dwObjects.geneSynonyms.append('tspan')
             .attr('x', 30)
-            .attr('y', geneY + 15)
+            .attr('y', geneY + 20)
             .attr('x','0')
-            .attr('dy', '1.2em')
+            .attr('dy', '1.2em');
 
-          dwObjects.geneDesc = drawText(geneX, geneY + 45, 11, "long dexcla;ksdjf;lask ")
-          dwObjects.geneDesc.append('gello')
+          dwObjects.geneDesc = drawText(geneX, geneY + 45, 11, "long dexcla;ksdjf;lask ");
+
           dwObjects.gd1 = dwObjects.geneDesc.append('tspan')
             .attr('x', 0)
             .attr('y', geneY + 45)
             .attr('x','0')
-            .attr('dy', '1.2em')
+            .attr('dy', '1.2em');
           dwObjects.gd2 = dwObjects.geneDesc.append('tspan')
             .attr('x', 0)
             .attr('y', geneY + 60)
             .attr('x','0')
-            .attr('dy', '1.2em')
+            .attr('dy', '1.2em');
 
           dwObjects.geneLoci = drawText(geneX, geneY + 90, 11, ":1232 p3232");
-
 
           dwObjects.phenoSymbol = drawText(phenoX , phenoY, 13, "Mental retardation, autosoman recessive")
             .on('mouseover', function () {
@@ -929,11 +915,11 @@
               blackText.call(this);
             });
 
-          dwObjects.phenoType = drawText(phenoX, phenoY + 15, 11, "Disorder: nondisease");
-          dwObjects.phenoInheritance = drawText(phenoX, phenoY + 30, 11, "Inheritance: Autosomal Dominant");
+          dwObjects.phenoType = drawText(phenoX, phenoY + 30, 11, "Disorder: nondisease");
+          dwObjects.phenoInheritance = drawText(phenoX, phenoY + 45, 11, "Inheritance: Autosomal Dominant");
 
           dwObjects.rrect = dv.append('rect')
-            .attr('x', phenoX - 35)
+            .attr('x', phenoX - 5)
             .attr('y', 0)
             .attr('width', 15)
             .attr('height', DETAIL_WIN_HEIGHT - 20)
