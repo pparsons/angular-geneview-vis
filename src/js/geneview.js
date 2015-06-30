@@ -3,7 +3,18 @@
   "use strict";
   angular
     .module('geneview')
-    .directive('geneview', ['geneview.config','geneLoader', 'phenotypeLoader', 'articleStatLoader', 'geneManager', function (config, geneLoader, phenotypeLoader, articleStatLoader, geneManager) {
+    .directive('geneview', ['cytochromosome','geneview.config','geneLoader', 'phenotypeLoader', 'articleStatLoader', 'geneManager', function (cytochromosome, config, geneLoader, phenotypeLoader, articleStatLoader, geneManager) {
+
+      function getSensitivityValue(start, end) {
+
+        // Max value to search
+        var defaultMax = 1000000;
+
+        // Default % for one side
+        var s = (end - start) * 0.10;
+
+        return s > defaultMax ? defaultMax : s;
+      }
 
       function link(scope, element, attrs, chrAPI) {
 
@@ -35,39 +46,122 @@
           PHENOTYPES_HEIGHT = 225,
           DETAIL_WIN_HEIGHT = 130;
 
-        //when selector has a new location
-        scope.$on("selector:newLoc", function (e, arg) {
+        var chr = cytochromosome.build();
+
+        chr.target(d3.select(element[0]).select('.chromosome'))
+          .segment(scope.chr)
+          .height(17)
+          .useRelative(false)
+          .showAxis(true)
+          .render();
+
+        chr.on('bandclick', function(e) {
+          scope.render();
+          var s = chr.getSelections()[0];
+          scope.updateSelectorMap([+s.start, +s.stop]);
+        });
+
+        chr.on('selectorend', function(){
           scope.render();
         });
 
+        function chrgvmap() {
+          //console.log('call')
+
+          var chrTarget = chr.getSVGTarget();
+          //console.log(chrTarget)
+          var gvmapContainer = chrTarget.append('g')
+            .classed('geneview-map', true)
+            .attr('transform', 'translate(0,' + 57 + ")");
+
+          var gvpoly = gvmapContainer.append('polygon');
+
+          var chrmax = chr.getMaxBasepair();
+
+          var chrScale = d3.scale.linear()
+            .domain([1, chrmax])
+            .range([0, scope.width]);
+
+          var gvScale = d3.scale.linear()
+            .range([0, +scope.width]);
+
+          scope.updateSelectorMap = function (arg) {
+
+            var selStart = arg[0];
+            var selStop = arg[1];
+            var sensitivity = Math.round(getSensitivityValue(selStart, selStop));
+
+            var ds = selStart - sensitivity;
+            var de = selStop + sensitivity;
+            gvScale.domain([ds, de]);
+
+            //TODO calculate/ get actual values than hardcode
+            var
+              p1x = chrScale(selStop),
+            //p1x = 400,
+              p1y = 0,
+
+              p2x = chrScale(selStart) + 14,
+            //p2x = 300,
+              p2y = 0,
+
+              p3x = gvScale(selStart),
+              p3y = 18,
+
+              p4x = gvScale(selStop),
+              p4y = 18;
+
+            gvpoly.attr('points', p1x + "," + p1y + " " + p2x + "," + p2y + " " + p3x + "," + p3y + " " + p4x + "," + p4y)
+              .style({
+                "fill": "#666666",
+                "opacity": 0.3,
+                "stroke": "black",
+                "stroke-width" : 1
+              });
+
+
+          }
+
+          chr.on("selectorchange", scope.updateSelectorMap);
+        }
+
+        var gvinit = false;
+
         var init = function () {
-          var selectionModel = chrAPI.getActiveSelection();
-          var chrConfigs = chrAPI.getAttrs();
+
+
+
+          var selectionModel = chr.getSelections();
 
           scope.displayGeneview = true;
           scope.articleStats = (scope.articleStats === true) ? true : (scope.articleStats === 'true');
           scope.phenotypes = (scope.phenotypes === true) ? true : (scope.phenotypes === 'true');
           scope.detailWindow = (scope.detailWindow === true) ? true : (scope.detailWindow === 'true');
-          scope.activeSelection = selectionModel.getSelectedBands().bands;
-          scope.sensitivity = Math.round(selectionModel.getSelectedBands().sensitivity);
-          scope.boundFrom = selectionModel.selStart - scope.sensitivity;
-          scope.boundTo = selectionModel.selEnd + scope.sensitivity;
-          scope.selectorStart = selectionModel.selStart;
-          scope.selectorEnd = selectionModel.selEnd;
-          scope.width = chrConfigs.width;
-          scope.chr = chrConfigs.chr;
+
+          scope.selectorStart = +selectionModel[0].start;
+          scope.selectorEnd = +selectionModel[0].stop;
+          scope.sensitivity = getSensitivityValue(scope.selectorStart, scope.selectorEnd);
+          scope.activeSelection = chr.getSelectedBands(scope.sensitivity);
+          scope.boundFrom = +selectionModel[0].start - scope.sensitivity;
+          scope.boundTo = +selectionModel[0].stop + scope.sensitivity;
+          scope.width = chr.width();
+          scope.chr = chr.segment();
           scope.height = 120;
           scope.showStatus = (scope.showStatus === true) ? true : (scope.showStatus === 'true');
-          scope.activeSelector = chrAPI.getActiveSelector();
 
 
           scope.xscale = d3.scale.linear()
             .range([0, +scope.width])
             .domain([scope.boundFrom, scope.boundTo]);
 
+          if(!gvinit) {
+            chrgvmap();
+            gvinit = true;
+          }
+
           divParent = d3.select(element[0]).select('.angular-geneview-vis')
             .style('height', scope.height + 'px')
-            .style('width', chrConfigs.width + 'px');
+            .style('width', scope.width + 'px');
 
           divParent.select('svg').remove();
 
@@ -109,7 +203,6 @@
         };
 
         function drawBands(bands) {
-
           //  Average band label width
           var LABEL_WIDTH = 26;
 
@@ -121,37 +214,51 @@
             .append('g');
 
           band.append('rect')
-            .attr('class', function (d) {
-              return d.type.replace(":", " ");
-            })
             .attr('x', function (d) {
-              return scope.xscale(+d.start);
+              return scope.xscale(+d.bp_start);
             })
             .attr('height', SD_1COL_HEIGHT)
             .attr('width', function (d) {
-              return scope.xscale(d.end) - scope.xscale(d.start);
+              return scope.xscale(d.bp_stop) - scope.xscale(d.bp_start);
+            })
+            .style({
+              'stroke' : '#d9d9d9',
+              'stroke-width': '0.5'
+            })
+            .style('fill', function(d){
+              return cyto_chr.getStainColour(d.stain, d.density);
             });
 
           band.append('text')
-            .attr('class', function (d) {
-              return d.type.substring(5) + '-text';
-            })
             .text(function (d) {
-              var bandw = scope.xscale(d.end) - scope.xscale(d.start);
+              var bandw = scope.xscale(d.bp_stop) - scope.xscale(d.bp_start);
               if (bandw < LABEL_WIDTH) {
                 return "";
               }
 
-              return d.id;
+              return d.arm + d.band;
             })
             .attr('x', function (d) {
 
-              var s = d.start < scope.boundFrom ? scope.boundFrom : d.start;
-              var e = d.end < scope.boundTo ? d.end : scope.boundTo;
+              var s = +d.bp_start < scope.boundFrom ? scope.boundFrom : +d.bp_start;
+              var e = +d.bp_stop < scope.boundTo ? +d.bp_stop : scope.boundTo;
               var mid = s + ((e - s) / 2);
               return scope.xscale(mid) - (LABEL_WIDTH / 2);
             })
-            .attr('y', 13);
+            .attr('y', 13)
+            .style('fill', function(d) {
+              if(d.stain === "gpos") {
+                switch(d.density) {
+                  case "100":
+                  case "75":
+                    return "white";
+                  case "50":
+                  case "25":
+                    return "black";
+                }
+              }
+            });
+
         }
 
         function updateStatusText(text, append) {
@@ -475,8 +582,15 @@
               var data = this.datum();
 
               var d3gene = svgTarget.select("#gene_"+ data.gene.gene.symbol);
-              var geneX = +d3gene.attr('x');
-              var geneY = +d3gene.attr('y');
+
+              try {
+                var geneX = +d3gene.attr('x');
+                var geneY = +d3gene.attr('y');
+              } catch(e) {
+                return;
+              }
+
+
 
               var geneWidth = (+scope.xscale(data.gene.gene.end)) - (+scope.xscale(data.gene.gene.start));
 
@@ -854,7 +968,6 @@
             updateStatusText("No active selectors");
           }
         };
-
       }
 
       function controller($scope) {
@@ -867,16 +980,16 @@
       return {
         controller: controller,
         link: link,
-        require: '^chromosome',
-        restrict: 'AE',
+        restrict: 'E',
         transclude: true,
         scope: {
+          chr: '@',
           showStatus: '@',
           articleStats: '@',
           phenotypes: '@',
           detailWindow: '@'
         },
-        template: "<div class='angular-geneview-vis' ng-show='displayGeneview' cg-busy='{promise:geneLoadPromise, message:&quot; Retrieving Data &quot;}'></div>"
+        template: "<div class='chromosome'></div><div class='angular-geneview-vis' ng-show='displayGeneview' cg-busy='{promise:geneLoadPromise, message:&quot; Retrieving Data &quot;}'></div>"
         //templateUrl: '../src/geneview-template.html'
       };
     }]);

@@ -3,7 +3,6 @@
 <head>
     <title>geneview-vis demo page</title>
 
-    <link rel="stylesheet" href="bower_components/angular-chromosome-vis/angular-chromosome-vis.css" />
     <link rel="stylesheet" href="src/angular-geneview-vis.css" />
     <link rel="stylesheet" href="bower_components/angular-busy/dist/angular-busy.min.css" />
     <link rel="stylesheet" href="bower_components/d3-context-menu/css/d3-context-menu.css"/>
@@ -24,15 +23,23 @@
 
     Current Version: {{version}}
 
-    <chromosome id="chr20" chr="X" rel-size="false"
-                axis="true" assembly="37" width='1000' height="20"
-                mode="single"
-                centromere="dot" geneview-map="true">
+    <div id="test"></div>
 
-        <geneview show-status="true" article-stats="false" phenotypes="true" detail-window="true">
 
-        </geneview>
-    </chromosome>
+    <!--<chromosome id="chr20" chr="X" rel-size="false"-->
+                <!--axis="true" assembly="37" width='1000' height="20"-->
+                <!--mode="single"-->
+                <!--centromere="dot" geneview-map="true">-->
+
+        <!--<geneview show-status="true" article-stats="false" phenotypes="true" detail-window="true">-->
+
+        <!--</geneview>-->
+    <!--</chromosome>-->
+
+    <geneview chr='4' show-status="true" article-stats="false" phenotypes="true" detail-window="true">
+
+    </geneview>
+
 
 </div>
 
@@ -49,10 +56,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
 <script src="bower_components/d3-context-menu/js/d3-context-menu.js"></script>
 
+<script src="node_modules/cyto-chromosome-vis/cyto-chromosome.js"></script>
 
-<!--<script src="bower_components/angular-chromosome-vis/angular-chromosome-vis.js"></script>-->
-<script src="angular-chromosome-vis.js"></script>
-<script src="bower_components/jsdas/jsdas.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/angular-busy/4.1.3/angular-busy.min.js"></script>
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/d3-tip/0.6.3/d3-tip.min.js"></script>
@@ -70,14 +75,19 @@
 
 <script>
 
-    var demoApp = angular.module('demoApp', ['angularChromosomeVis', 'geneview', 'cgBusy'])
-            .config(['geneview.configProvider', function(gvConfig) {
+    var demoApp = angular.module('demoApp', ['geneview', 'cgBusy', 'cyto-chromosome-vis'])
+            .config(['geneview.configProvider','cytochromosomeProvider', function(gvConfig, chrConfig) {
                 gvConfig.setServer("peaceful-citadel-6962.herokuapp.com");
+                chrConfig.setDataDir('./node_modules/cyto-chromosome-vis/data/')
             }]);
 
-    demoApp.controller('mainCtrl', ['$scope','geneview.version', function($scope, version) {
+    demoApp.controller('mainCtrl', ['$scope','geneview.version','cytochromosome', function($scope, version, cytochr) {
 
         $scope.version = version;
+        cytochr.build()
+                .target("#test")
+                //.render()
+
 
     }]);
 
