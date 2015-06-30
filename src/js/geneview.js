@@ -67,7 +67,9 @@
         });
 
         scope.$on('geneview:render', function(e, a) {
-          chr.segment(a)
+          chr
+            .segment(a.segment)
+            .resolution(a.resolution)
             .render();
           gvinit = false;
         });
