@@ -44,13 +44,14 @@
           SD_1COL_HEIGHT = 20,
           GENES_YSHIFT = 34,
           PHENOTYPES_HEIGHT = 225,
-          DETAIL_WIN_HEIGHT = 130;
+          DETAIL_WIN_HEIGHT = 160;
 
         var chr = cytochromosome.build();
 
         chr.target(d3.select(element[0]).select('.chromosome'))
           .segment(scope.chr)
           .height(17)
+          .resolution(850)
           .useRelative(false)
           .showAxis(true)
           .render();
@@ -256,6 +257,8 @@
                   case "25":
                     return "black";
                 }
+              }else if(d.stain ==="acen") {
+                return "white";
               }
             });
 
@@ -792,9 +795,28 @@
         function updateDetailInfo(model, i) {
 
           var gene = model.gene.gene;
+
+
+          var gsa = gene.synonyms.split(', ');
+          var desc = gene.desc.split(' ');
+
+          var gsy_1 = gsa.slice(0, 8).join(', ')
+          var gsy_2 = gsa.slice(8, gsa.length).join(', ');
+
+          var dsa_1 = desc.slice(0, 8).join(' ');
+          var dsa_2 = desc.slice(8, desc.length).join(' ');
+          console.log(dsa_1, '^^',dsa_2)
+
+
+          dwObjects.gst1.text(gsy_1)
+          dwObjects.gst2.text(gsy_2)
+
+          dwObjects.gd1.text(dsa_1)
+          dwObjects.gd2.text(dsa_2)
+
           dwObjects.geneTitle.text(gene.symbol);
-          dwObjects.geneSynonyms.text(gene.synonyms);
-          dwObjects.geneDesc.text(gene.desc);
+
+          //dwObjects.geneDesc.text(gene.desc);
           dwObjects.geneLoci.text(gene.cytloc + ' [' + gene.start + ' - ' + gene.end + ']');
           dwObjects.lrect.style('fill', '#ffb006');
 
@@ -825,17 +847,20 @@
           var dv = svgTarget.append('g')
             .attr('transform', 'translate(0,' + (currentHeights.fullSVGHeight - DETAIL_WIN_HEIGHT)+")");
 
+          var dv_t = dv.append('g')
+            .attr('transform', 'translate(35,0)');
+
+
           drawBarrierLine.call(svgTarget, currentHeights.fullSVGHeight - DETAIL_WIN_HEIGHT);
 
           function drawText(x, y, size, testtext) {
-            return dv.append('text')
+            return dv_t.append('text')
               .style('font-size', size + 'px')
               .attr('x', x)
               .attr('y', y);
-              //.text(testtext);
           }
 
-          var geneX = 35;
+          var geneX = 0;
           var geneY = 30;
           var phenoX = 430;
           var phenoY = 30;
@@ -866,9 +891,34 @@
               }
             });
 
-          dwObjects.geneSynonyms = drawText(geneX, geneY + 15, 11, "GHAR, ADER");
-          dwObjects.geneDesc = drawText(geneX, geneY + 35, 11, "long dexcla;ksdjf;lask ");
-          dwObjects.geneLoci = drawText(geneX, geneY + 50, 11, ":1232 p3232");
+
+          dwObjects.geneSynonyms = drawText(geneX, geneY, 11, "GHAR, ADER");
+
+          dwObjects.gst1 = dwObjects.geneSynonyms.append('tspan')
+            .attr('x', 0)
+            .attr('y', geneY)
+            .attr('x','0')
+            .attr('dy', '1.2em')
+          dwObjects.gst2 = dwObjects.geneSynonyms.append('tspan')
+            .attr('x', 30)
+            .attr('y', geneY + 15)
+            .attr('x','0')
+            .attr('dy', '1.2em')
+
+          dwObjects.geneDesc = drawText(geneX, geneY + 45, 11, "long dexcla;ksdjf;lask ")
+          dwObjects.geneDesc.append('gello')
+          dwObjects.gd1 = dwObjects.geneDesc.append('tspan')
+            .attr('x', 0)
+            .attr('y', geneY + 45)
+            .attr('x','0')
+            .attr('dy', '1.2em')
+          dwObjects.gd2 = dwObjects.geneDesc.append('tspan')
+            .attr('x', 0)
+            .attr('y', geneY + 60)
+            .attr('x','0')
+            .attr('dy', '1.2em')
+
+          dwObjects.geneLoci = drawText(geneX, geneY + 90, 11, ":1232 p3232");
 
 
           dwObjects.phenoSymbol = drawText(phenoX , phenoY, 13, "Mental retardation, autosoman recessive")
