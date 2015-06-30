@@ -66,6 +66,12 @@
           scope.render();
         });
 
+        scope.$on('geneview:render', function(e, a) {
+          chr.segment(a)
+            .render();
+          gvinit = false;
+        });
+
         function chrgvmap() {
           //console.log('call')
 

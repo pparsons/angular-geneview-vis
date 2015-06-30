@@ -9,6 +9,11 @@
 
     <style>
 
+
+        #controls {
+            margin: 10px 10px 10px 0;
+        }
+
         #container{
             margin:auto;
             width: 1000px;
@@ -19,9 +24,19 @@
 
 <body ng-controller="mainCtrl">
 
+
 <div id="container">
 
     Current Version: {{version}}
+
+    <div id="controls">
+        <span>Chromosome Number:</span>
+        <span ng-repeat="chr in chromosomes">
+            <button ng-click="chrclick(chr)">{{chr}}</button>
+        </span>
+
+
+    </div>
 
     <div id="test"></div>
 
@@ -84,9 +99,18 @@
     demoApp.controller('mainCtrl', ['$scope','geneview.version','cytochromosome', function($scope, version, cytochr) {
 
         $scope.version = version;
-        cytochr.build()
-                .target("#test")
-                //.render()
+        $scope.chromosomes = [];
+        for(var i = 1; i <= 22; i++) {
+            $scope.chromosomes.push(i.toString())
+        }
+
+        $scope.chromosomes.push("X")
+        $scope.chromosomes.push("Y")
+
+        $scope.chrclick = function(a) {
+            $scope.$broadcast('geneview:render', a);
+        }
+
 
 
     }]);
