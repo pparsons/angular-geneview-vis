@@ -6,34 +6,48 @@
     <link rel="stylesheet" href="src/angular-geneview-vis.css" />
     <link rel="stylesheet" href="bower_components/angular-busy/dist/angular-busy.min.css" />
     <link rel="stylesheet" href="bower_components/d3-context-menu/css/d3-context-menu.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 
     <style>
 
 
         #controls {
             margin: 10px 10px 10px 0;
+            border: 1px solid black;
+            padding: 10px;
         }
 
         #container{
             margin:auto;
             width: 1000px;
         }
+
+        .resolution-div {
+            margin-top: 10px;
+        }
+
     </style>
 </head>
 
 
 <body ng-controller="mainCtrl">
-
-
 <div id="container">
 
     Current Version: {{version}}
 
     <div id="controls">
-        <span>Chromosome Number:</span>
-        <span ng-repeat="chr in chromosomes">
-            <button ng-click="chrclick(chr)">{{chr}}</button>
-        </span>
+        <p>Chromosome Number:</p>
+        <div class="btn-group" ng-repeat="chr in chromosomes">
+            <input ng-class="{'active':chrSettings.segment ===chr}" class="btn btn-default" type="button" ng-click="chrclick(chr)" value="{{chr}}">
+
+        </div>
+
+        <div class="resolution-div">
+            <p>Resolution:</p>
+            <span ng-repeat="res in resolutions">
+                <input ng-class="{'active':chrSettings.resolution === res}" class="btn btn-default" ng-click="setresolution(res)" value="{{res}}">
+            </span>
+        </div>
 
 
     </div>
@@ -101,14 +115,25 @@
         $scope.version = version;
         $scope.chromosomes = [];
         for(var i = 1; i <= 22; i++) {
-            $scope.chromosomes.push(i.toString())
+            $scope.chromosomes.push(i.toString());
         }
+        $scope.chrSettings = {
+            segment: "1",
+            resolution: "550"
+        };
+        $scope.resolutions = ["400", "550", "850"];
 
-        $scope.chromosomes.push("X")
-        $scope.chromosomes.push("Y")
+        $scope.chromosomes.push("X");
+        $scope.chromosomes.push("Y");
 
         $scope.chrclick = function(a) {
-            $scope.$broadcast('geneview:render', a);
+            $scope.chrSettings.segment = a;
+            $scope.$broadcast('geneview:render', $scope.chrSettings);
+        };
+
+        $scope.setresolution = function(r) {
+            $scope.chrSettings.resolution = r;
+            $scope.$broadcast('geneview:render', $scope.chrSettings)
         }
 
 
