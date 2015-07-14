@@ -1,7 +1,7 @@
 
 .idea/*
 npm-debug.log
-node_modules/gulp*
-node_modules/.bin
+node_modules/*
+bower_components/*
 
 *.map
