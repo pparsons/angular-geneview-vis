@@ -104,10 +104,34 @@
 
 <script>
 
+    var test_context_menu = [
+        {
+            title: "Item 1",
+            action: function(e, d, i) {
+                console.log("Item 1 clicked")
+            }
+        },
+        {
+            title: "Item 2",
+            action: function(e, d, i) {
+                console.log("Item 2 clicked")
+            }
+        }
+    ];
+    function test_cb(d) {
+        console.log("cb called", d);
+    }
+
     var demoApp = angular.module('demoApp', ['geneview', 'cgBusy', 'cyto-chromosome-vis'])
             .config(['geneview.configProvider','cytochromosomeProvider', function(gvConfig, chrConfig) {
+
+                //chrConfig.setDataDir('./node_modules/cyto-chromosome-vis/data/');
+
                 gvConfig.setServer("peaceful-citadel-6962.herokuapp.com");
-                chrConfig.setDataDir('./node_modules/cyto-chromosome-vis/data/')
+                gvConfig.setGeneClickAction(test_cb);
+                gvConfig.setPhenotypeClickAction(test_cb);
+                gvConfig.setGeneContextMenu(test_context_menu);
+                gvConfig.setPhenotypeContextMenu(test_context_menu);
             }]);
 
     demoApp.controller('mainCtrl', ['$scope','geneview.version','cytochromosome', function($scope, version, cytochr) {

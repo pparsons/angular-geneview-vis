@@ -881,11 +881,14 @@
               var d = geneDB[title].gene;
 
               if(typeof config.geneClickAction === 'function') {
-
                 config.geneClickAction(d);
               }
+            })
+            .on('contextmenu', function() {
+              if (typeof config.geneContextMenu !== 'undefined') {
+                d3.contextMenu(config.geneContextMenu)();
+              }
             });
-
 
           dwObjects.geneSynonyms = drawText(geneX, geneY, 11, "GHAR, ADER");
 
@@ -921,6 +924,11 @@
             })
             .on('mouseout', function () {
               blackText.call(this);
+            })
+            .on('contextmenu', function() {
+              if (typeof config.phenotypeContextMenu !== 'undefined') {
+                d3.contextMenu(config.phenotypeContextMenu)();
+              }
             });
 
           dwObjects.phenoType = drawText(phenoX, phenoY + 30, 11, "Disorder: nondisease");
