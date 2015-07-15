@@ -5,17 +5,6 @@
     .module('geneview')
     .directive('geneview', ['cytochromosome','geneview','geneLoader', 'phenotypeLoader', 'articleStatLoader', 'geneManager', function (cytochromosome, config, geneLoader, phenotypeLoader, articleStatLoader, geneManager) {
 
-      function getSensitivityValue(start, end) {
-
-        // Max value to search
-        var defaultMax = 1000000;
-
-        // Default % for one side
-        var s = (end - start) * 0.10;
-
-        return s > defaultMax ? defaultMax : s;
-      }
-
       function link(scope, element, attrs, chrAPI) {
 
         var
@@ -74,6 +63,12 @@
           gvinit = false;
         });
 
+        function getSensitivityValue(start, end) {
+          var defaultMax = 1000000;
+          var s = (end - start) * 0.10;
+          return s > defaultMax ? defaultMax : s;
+        }
+
         function chrgvmap() {
           //console.log('call')
 
@@ -81,7 +76,7 @@
           //console.log(chrTarget)
           var gvmapContainer = chrTarget.append('g')
             .classed('geneview-map', true)
-            .attr('transform', 'translate(0,' + 57 + ")");
+            .attr('transform', 'translate(0,' + 60 + ")");
 
           var gvpoly = gvmapContainer.append('polygon');
 
@@ -107,18 +102,16 @@
             //TODO calculate/ get actual values than hardcode
             var
               p1x = chrScale(selStop),
-            //p1x = 400,
               p1y = 0,
 
               p2x = chrScale(selStart) + 14,
-            //p2x = 300,
               p2y = 0,
 
               p3x = gvScale(selStart),
-              p3y = 18,
+              p3y = 19,
 
               p4x = gvScale(selStop),
-              p4y = 18;
+              p4y = 19;
 
             gvpoly.attr('points', p1x + "," + p1y + " " + p2x + "," + p2y + " " + p3x + "," + p3y + " " + p4x + "," + p4y)
               .style({
