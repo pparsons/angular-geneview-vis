@@ -19,6 +19,7 @@
           statusText,
           geneTip,
           phenoTip,
+          gvmapContainer,
 
           // Immediate div containing target svg
           divParent,
@@ -55,6 +56,13 @@
           scope.render();
         });
 
+        chr.on('selectordelete', function(){
+          console.log('del')
+          init();
+          gvmapContainer.remove();
+          gvinit = false;
+        });
+
         scope.$on('geneview:render', function(e, a) {
           chr
             .segment(a.segment)
@@ -73,8 +81,7 @@
           //console.log('call')
 
           var chrTarget = chr.getSVGTarget();
-          //console.log(chrTarget)
-          var gvmapContainer = chrTarget.append('g')
+          gvmapContainer = chrTarget.append('g')
             .classed('geneview-map', true)
             .attr('transform', 'translate(0,' + 60 + ")");
 
