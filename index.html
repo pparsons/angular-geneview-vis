@@ -123,7 +123,7 @@
     }
 
     var demoApp = angular.module('demoApp', ['geneview', 'cgBusy', 'cyto-chromosome-vis'])
-            .config(['geneview.configProvider','cytochromosomeProvider', function(gvConfig, chrConfig) {
+            .config(['geneviewProvider','cytochromosomeProvider', function(gvConfig, chrConfig) {
 
                 //chrConfig.setDataDir('./node_modules/cyto-chromosome-vis/data/');
 
@@ -134,9 +134,9 @@
                 gvConfig.setPhenotypeContextMenu(test_context_menu);
             }]);
 
-    demoApp.controller('mainCtrl', ['$scope','geneview.version','cytochromosome', function($scope, version, cytochr) {
+    demoApp.controller('mainCtrl', ['$scope','geneview','cytochromosome', function($scope, geneview, cytochr) {
 
-        $scope.version = version;
+        $scope.version = geneview.version;
         $scope.chromosomes = [];
         for(var i = 1; i <= 22; i++) {
             $scope.chromosomes.push(i.toString());

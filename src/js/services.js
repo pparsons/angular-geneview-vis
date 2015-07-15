@@ -4,7 +4,7 @@
   angular
     .module('geneview')
     //Load genes based on chromosome start and end location
-    .factory('geneLoader', ['$http', "geneview.config", function ($http, config) {
+    .factory('geneLoader', ['$http', "geneview", function ($http, config) {
 
       return {
         getGenes: function (chr, start, stop, callID, cb) {
@@ -125,7 +125,7 @@
     }])
 
     //return array of promisses containing phenotype info
-    .factory('phenotypeLoader', ['$q', '$http', "geneview.config", function ($q, $http, config) {
+    .factory('phenotypeLoader', ['$q', '$http', "geneview", function ($q, $http, config) {
       var http = {
         omim: function (gene) {
           return $http({

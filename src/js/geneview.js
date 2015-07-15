@@ -3,7 +3,7 @@
   "use strict";
   angular
     .module('geneview')
-    .directive('geneview', ['cytochromosome','geneview.config','geneLoader', 'phenotypeLoader', 'articleStatLoader', 'geneManager', function (cytochromosome, config, geneLoader, phenotypeLoader, articleStatLoader, geneManager) {
+    .directive('geneview', ['cytochromosome','geneview','geneLoader', 'phenotypeLoader', 'articleStatLoader', 'geneManager', function (cytochromosome, config, geneLoader, phenotypeLoader, articleStatLoader, geneManager) {
 
       function getSensitivityValue(start, end) {
 
@@ -188,7 +188,7 @@
           phenoTip = d3.tip()
             .attr('class', 'd3-tip')
             .direction('w')
-            .offset([-18,-30])
+            .offset([-10,-30])
             .html(function(d){
               //console.log(d);
               var phenotypes = d.phenotypes;

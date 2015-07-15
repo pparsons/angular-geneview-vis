@@ -3,8 +3,8 @@
   "use strict";
   angular
     .module('geneview', [])
-    .value("geneview.version", "0.2.5")
-    .provider("geneview.config", function() {
+    .provider("geneview", function() {
+      this.version = "0.2.5";
 
       this.setServer = function(newServer) {
         this.server = newServer;
