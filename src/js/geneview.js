@@ -188,15 +188,11 @@
           phenoTip = d3.tip()
             .attr('class', 'd3-tip')
             .direction('w')
-            .offset([-10,-30])
+            .offset([-15,-35])
             .html(function(d){
-              //console.log(d);
-              var phenotypes = d.phenotypes;
-              //phenotypes[i].phenotypeMap.phenotype
               var t = '';
-              phenotypes.forEach(function(v, i) {
+              d.phenotypes.forEach(function(v, i) {
                 t+= '<div>'+ (++i) +'. '+ v.phenotypeMap.phenotype + '</div>';
-
               });
 
               return t;
