@@ -951,7 +951,8 @@
             })
             .on('contextmenu', function() {
               if (typeof config.phenotypeContextMenu !== 'undefined') {
-                d3.contextMenu(config.phenotypeContextMenu)();
+                var d = d3.select(this).text();
+                d3.contextMenu(config.phenotypeContextMenu)(d);
               }
             });
 
