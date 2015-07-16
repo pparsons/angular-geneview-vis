@@ -601,6 +601,11 @@
             .on('mouseout', geneTip.hide)
             .on('click', function (d) {
               updateDetailInfo({gene:d}, -1);
+            })
+            .on('contextmenu', function(d) {
+              if (typeof config.geneContextMenu !== 'undefined') {
+                d3.contextMenu(config.geneContextMenu)(d);
+              }
             });
           //.on('contextmenu', d3.contextMenu(menu))
           //.on('mousedown', d3.contextMenu(menu));
