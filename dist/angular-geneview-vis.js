@@ -1410,7 +1410,14 @@
                 .attr('cy', function (d) {
                   return yscale(d.articleCount);
                 })
-                .attr('fill', 'orange');
+                .attr('fill', function(d) {
+                  if (d.articleCount === 0) {
+                    return 'lightgray';
+                  }
+                  else {
+                    return 'orange';
+                  }
+                });
 
               articleTip = d3.tip()
                 .attr('class', 'd3-tip')
@@ -1432,7 +1439,14 @@
               gene.on('mouseout', function (d) {
                 var ge = d3.select(this).select('circle');
                 articleTip.hide(d);
-                ge.attr('fill', 'orange');
+                ge.attr('fill', function(d) {
+                  if (d.articleCount === 0) {
+                    return 'lightgray';
+                  }
+                  else {
+                    return 'orange';
+                  }
+                });
 
               });
             }
@@ -1440,5 +1454,6 @@
         }
       };
     }]);
-}());}();
+}());
+}();
 //# sourceMappingURL=angular-geneview-vis.js.map
