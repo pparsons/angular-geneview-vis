@@ -1,69 +1,72 @@
 
 <style>
-    .geneviewcontrol {
-        border: 1px dotted #8d99a8;
-        padding: 5px;
-    }
+  .geneviewcontrol {
+    border: 1px dotted #8d99a8;
+    padding: 5px;
+  }
 
-    .gvcontrol-selector {
-        padding: 2px;
-    }
+  .gvcontrol-selector {
+    padding: 2px;
+  }
 
-    .form-inline {
-        padding: 2px;
-    }
+  .form-inline {
+    padding: 2px;
+  }
 
 
 </style>
 <div class="col-md-12 geneviewcontrol">
-
+  <h4>Chromosome {{chr}}</h4>
+  <div class="row">
     <div class="gvcontrol-selector form-group">
-        <h4>Chrmosome {{chr}}</h4>
+      <div class="col-sm-5">
         <div class="form-inline">
-            <label>Start:</label> <input class="form-control" type="number" ng-model="selStart" ng-change="updateSelector()" style="text-align: right" min="1"/>
-            <label>Stop:</label> <input class="form-control" type="number" ng-model="selStop" ng-change="updateSelector()" style="text-align: right" min="1" />
+          <label>Start:</label> <input class="form-control" type="number" ng-model="selStart" ng-change="updateSelector()" style="text-align: right" min="1"/>
+          <label>Stop:</label> <input class="form-control" type="number" ng-model="selStop" ng-change="updateSelector()" style="text-align: right" min="1" />
         </div>
-        
+      </div>
+      <div class="col-sm-3">
         <div class="form-inline">
-
-
-            <form>
-                <label>Resolution: </label>
-                <label class="radio-inline">
-                    <input type="radio" name="{{name}}" ng-click="updateResolution(400)"> 400
-                </label>
-                <label class="radio-inline">
-                    <input type="radio" name="{{name}}" ng-click="updateResolution(550)" checked> 550
-                </label>
-                <label class="radio-inline">
-                    <input type="radio" name="{{name}}" ng-click="updateResolution(850)"> 850
-                </label>
-                <label class="radio-inline">
-                    <input type="radio" name="{{name}}" ng-click="updateResolution(1200)"> 1200
-                </label>
-            </form>
-
-
+          <form>
+            <label>Resolution: </label>
+            <label class="radio-inline">
+              <input type="radio" name="{{name}}" ng-click="updateResolution(400)"> 400
+            </label>
+            <label class="radio-inline">
+              <input type="radio" name="{{name}}" ng-click="updateResolution(550)" checked> 550
+            </label>
+            <label class="radio-inline">
+              <input type="radio" name="{{name}}" ng-click="updateResolution(850)"> 850
+            </label>
+            <label class="radio-inline">
+              <input type="radio" name="{{name}}" ng-click="updateResolution(1200)"> 1200
+            </label>
+          </form>
         </div>
+      </div>
+      <div class="col-sm-3 col-sm-offset-1">
         <div>
-            <form>
-                <label class="checkbox-inline">
-                    <input type="checkbox" ng-model="chrSettings.showAxis" ng-click="render()"> Show Axis
-                </label>
+          <form>
+            <label class="checkbox-inline">
+              <input type="checkbox" ng-model="chrSettings.showAxis" ng-click="render()"> Show Axis
+            </label>
 
-                <label class="checkbox-inline">
-                    <input type="checkbox" ng-model="chrSettings.relativeSize" ng-click="render()"> Relative Chromosome Size
-                </label>
-                <!--<label class="checkbox-inline">-->
-                    <!--<input type="checkbox" ng-model="chrSettings.showDetails" ng-click="render()"> Show Details-->
-                <!--</label>-->
-                <!--<label class="checkbox-inline">-->
-                    <!--<input type="checkbox" ng-model="chrSettings.articleStats" ng-click="render()"> Show Article Stats-->
-                <!--</label>-->
-            </form>
-
+            <label class="checkbox-inline">
+              <input type="checkbox" ng-model="chrSettings.relativeSize" ng-click="render()"> Relative Chromosome Size
+            </label>
+            <!--<label class="checkbox-inline">-->
+            <!--<input type="checkbox" ng-model="chrSettings.showDetails" ng-click="render()"> Show Details-->
+            <!--</label>-->
+            <!--<label class="checkbox-inline">-->
+            <!--<input type="checkbox" ng-model="chrSettings.articleStats" ng-click="render()"> Show Article Stats-->
+            <!--</label>-->
+          </form>
         </div>
+      </div>
     </div>
-    <hr/>
-    <geneview chr="{{chr}}" show-status="true" phenotypes="true" detail-window="true" article-stats="{{articleStats}}"></geneview>
+  </div>
+
+
+  <hr/>
+  <geneview chr="{{chr}}" show-status="true" phenotypes="true" detail-window="true" article-stats="{{articleStats}}"></geneview>
 </div>
