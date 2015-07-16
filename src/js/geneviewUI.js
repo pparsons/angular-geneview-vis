@@ -7,6 +7,8 @@
 
       function link(scope, ele, attr) {
 
+        scope.articleStats = (scope.articleStats === true) ? true : (scope.articleStats === 'true');
+
         scope.selStart = 1;
         scope.selStop = 1;
 
@@ -63,7 +65,8 @@
         link: link,
         restrict: 'E',
         scope: {
-          chr: '@'
+          chr: '@',
+          articleStats: '@'
         },
 
         templateUrl: "src/geneviewUITemplate.html"

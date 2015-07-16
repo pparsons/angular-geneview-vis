@@ -225,44 +225,12 @@
       };
     }])
 
-    //
-    .factory('gen2Phen', ['$http', '$rootScope', function ($http, $rootScope) {
-      return {
-        omim: function (gene) {
-          return $http({
-            method: 'get',
-            url: '//' + $rootScope.server + '/soscip/api/gen2phen.php',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            params: {'gene': gene}
-          });
-        },
-        lit: function (gene) {
-          var searchParams = {
-            core: 'medline-citations',
-            handler: 'select',
-            searchFields: JSON.stringify(['genes']), //stringify the array so it is sent properly
-            query: gene,
-            years: {min: 1950, max: 2015},
-            start: 0,
-            rows: 100,
-            retFields: 'phenotypes'
-          };
-          return $http({
-            method: 'get',
-            url: '//' + $rootScope.server + '/soscip/api/search.php',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            params: searchParams
-          });
-        }
-      };
-    }])
-
     //Load article statistics for an array of genes
-    .factory('articleStatLoader', ['$http', '$rootScope', function ($http, $rootScope) {
+    .factory('articleStatLoader', ['$http', 'geneview', function ($http, geneviewconfig) {
 
       return {
         getArticleCount: function (genes, cb) {
-          return $http.get('//' + $rootScope.server + '/soscip/api/genearticlestats.php?genes=' + genes)
+          return $http.get('//129.100.19.193' + '/soscip/api/genearticlestats.php?genes=' + genes)
             .success(function (d) {
               cb(d);
             });
@@ -1332,7 +1300,7 @@
           phenotypes: '@',
           detailWindow: '@'
         },
-        template: "<div class='chromosome'></div><div class='angular-geneview-vis' ng-show='displayGeneview' cg-busy='{promise:geneLoadPromise, message:&quot; Retrieving Data &quot;}'></div>"
+        template: "<div class='chromosome'></div><div class='angular-geneview-vis' ng-show='displayGeneview' cg-busy='{promise:geneLoadPromise, message:&quot; Retrieving Data &quot;}'></div><div><article-view class='article-view-e' data='articleData' ng-show='articleStats && displayGeneview' width='width'></article-view></div>"
         //templateUrl: '../src/geneview-template.html'
       };
     }]);

@@ -1058,7 +1058,7 @@
           phenotypes: '@',
           detailWindow: '@'
         },
-        template: "<div class='chromosome'></div><div class='angular-geneview-vis' ng-show='displayGeneview' cg-busy='{promise:geneLoadPromise, message:&quot; Retrieving Data &quot;}'></div>"
+        template: "<div class='chromosome'></div><div class='angular-geneview-vis' ng-show='displayGeneview' cg-busy='{promise:geneLoadPromise, message:&quot; Retrieving Data &quot;}'></div><div><article-view class='article-view-e' data='articleData' ng-show='articleStats && displayGeneview' width='width'></article-view></div>"
         //templateUrl: '../src/geneview-template.html'
       };
     }]);
