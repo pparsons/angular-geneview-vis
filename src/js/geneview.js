@@ -901,7 +901,9 @@
                 config.geneClickAction(d);
               }
             })
-            .on('contextmenu', function(d) {
+            .on('contextmenu', function() {
+              var title = d3.select(this).text();
+              var d = geneDB[title].gene;
               if (typeof config.geneContextMenu !== 'undefined') {
                 d3.contextMenu(config.geneContextMenu)(d);
               }
@@ -942,9 +944,9 @@
             .on('mouseout', function () {
               blackText.call(this);
             })
-            .on('contextmenu', function(d) {
+            .on('contextmenu', function() {
               if (typeof config.phenotypeContextMenu !== 'undefined') {
-                d3.contextMenu(config.phenotypeContextMenu)(d);
+                d3.contextMenu(config.phenotypeContextMenu)();
               }
             });
 
