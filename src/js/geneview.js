@@ -6,7 +6,6 @@
     .directive('geneview', ['cytochromosome','geneview','geneLoader', 'phenotypeLoader', 'articleStatLoader', 'geneManager', function (cytochromosome, config, geneLoader, phenotypeLoader, articleStatLoader, geneManager) {
 
       function link(scope, element, attrs, chrAPI) {
-
         var
           svgTarget,
 
@@ -41,34 +40,52 @@
         chr.target(d3.select(element[0]).select('.chromosome'))
           .segment(scope.chr)
           .height(17)
-          .resolution(850)
+          .resolution(550)
           .useRelative(false)
           .showAxis(true)
           .render();
 
-        chr.on('bandclick', function(e) {
+        function updateRender() {
           scope.render();
           var s = chr.getSelections()[0];
           scope.updateSelectorMap([+s.start, +s.stop]);
+        }
+
+        chr.on('bandclick', function(d) {
+          updateRender();
+          scope.$emit('bandclick', d);
         });
 
-        chr.on('selectorend', function(){
+        chr.on('selectorend', function(d){
           scope.render();
+          scope.$emit('selectorend', d);
         });
 
-        chr.on('selectordelete', function(){
-          console.log('del')
+        chr.on('selectordelete', function(d){
           init();
           gvmapContainer.remove();
           gvinit = false;
+          scope.$emit('selectordelete', d);
         });
 
         scope.$on('geneview:render', function(e, a) {
           chr
             .segment(a.segment)
             .resolution(a.resolution)
+            .showAxis(a.showAxis)
+            .useRelative(a.relativeSize)
             .render();
           gvinit = false;
+        });
+
+        chr.on("selectorchange", function(d) {
+          scope.updateSelectorMap(d);
+          scope.$emit('selectorchange', d);
+        });
+
+        scope.$on('geneview:updateselector', function(e, d) {
+          chr.moveSelectorTo(d.start, d.stop);
+          updateRender();
         });
 
         function getSensitivityValue(start, end) {
@@ -78,8 +95,6 @@
         }
 
         function chrgvmap() {
-          //console.log('call')
-
           var chrTarget = chr.getSVGTarget();
           gvmapContainer = chrTarget.append('g')
             .classed('geneview-map', true)
@@ -97,7 +112,6 @@
             .range([0, +scope.width]);
 
           scope.updateSelectorMap = function (arg) {
-
             var selStart = arg[0];
             var selStop = arg[1];
             var sensitivity = Math.round(getSensitivityValue(selStart, selStop));
@@ -127,14 +141,18 @@
                 "stroke": "black",
                 "stroke-width" : 1
               });
-
-
           }
-
-          chr.on("selectorchange", scope.updateSelectorMap);
         }
 
         var gvinit = false;
+
+        function initgvmap () {
+          if(!gvinit) {
+            chrgvmap();
+            gvinit = true;
+          }
+        }
+
 
         var init = function () {
 
@@ -161,10 +179,7 @@
             .range([0, +scope.width])
             .domain([scope.boundFrom, scope.boundTo]);
 
-          if(!gvinit) {
-            chrgvmap();
-            gvinit = true;
-          }
+          initgvmap();
 
           divParent = d3.select(element[0]).select('.angular-geneview-vis')
             .style('height', scope.height + 'px')
@@ -277,8 +292,8 @@
             statusBar.append('rect')
               .classed('geneview-statusbar', true)
               .attr('fill', '#ededed')
-              .attr('width', scope.width)
-              .attr('height', SD_1COL_HEIGHT);
+              .attr('width', scope.width - 2)
+              .attr('height', SD_1COL_HEIGHT - 2);
 
             statusText = statusBar.append('text')
               .attr('transform', 'translate(5,' + 14 + ")");
@@ -627,36 +642,42 @@
                   geneTip.show(geneData, domgene);
                 }
 
-                this.append('text')
+                var ptext = this.append('text')
                   .text(text)
                   .attr('transform', "translate(" + (xpos + 12) + "," + (margin.top + 15) + ")rotate(25)")
 
-                  .on('mouseover', function (d) {
-                    showDetails.call(this, d, i);
-                  })
-                  .on('mouseout', function () {
-                    hideDetails.call(this, i);
-                  })
-                  .on('click', function(d) {
-                    updateDetailInfo(d, i);
-                  }).on('contextmenu', function(d) {
+                  if (scope.detailWindow) {
+                    ptext.on('mouseover', function (d) {
+                      showDetails.call(this, d, i);
+                    })
+                      .on('mouseout', function () {
+                        hideDetails.call(this, i);
+                      })
+                      .on('click', function (d) {
+                        updateDetailInfo(d, i);
+                      }).on('contextmenu', function (d) {
 
-                    var menu = [];
-                    function makeItem(title, i) {
-                      return {
-                        title: title,
-                        action: function() { updateDetailInfo(d, i); }
-                      };
-                    }
+                        var menu = [];
 
-                    for(var j =0; j < data.phenotypes.length; j ++) {
-                      var p = data.phenotypes[j].phenotypeMap;
+                        function makeItem(title, i) {
+                          return {
+                            title: title,
+                            action: function () {
+                              updateDetailInfo(d, i);
+                            }
+                          };
+                        }
 
-                      menu.push(makeItem(p.phenotype, j));
-                    }
+                        for (var j = 0; j < data.phenotypes.length; j++) {
+                          var p = data.phenotypes[j].phenotypeMap;
 
-                    d3.contextMenu(menu)(d,i);
-                  });
+                          menu.push(makeItem(p.phenotype, j));
+                        }
+
+                        d3.contextMenu(menu)(d, i);
+                      });
+                  }
+
 
               }
 

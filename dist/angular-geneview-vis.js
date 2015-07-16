@@ -4,8 +4,8 @@
   "use strict";
   angular
     .module('geneview', [])
-    .value("geneview.version", "0.2.5")
-    .provider("geneview.config", function() {
+    .provider("geneview", function() {
+      this.version = "0.2.5";
 
       this.setServer = function(newServer) {
         this.server = newServer;
@@ -279,19 +279,7 @@
     .module('geneview')
     .directive('geneview', ['cytochromosome','geneview','geneLoader', 'phenotypeLoader', 'articleStatLoader', 'geneManager', function (cytochromosome, config, geneLoader, phenotypeLoader, articleStatLoader, geneManager) {
 
-      function getSensitivityValue(start, end) {
-
-        // Max value to search
-        var defaultMax = 1000000;
-
-        // Default % for one side
-        var s = (end - start) * 0.10;
-
-        return s > defaultMax ? defaultMax : s;
-      }
-
       function link(scope, element, attrs, chrAPI) {
-
         var
           svgTarget,
 
@@ -304,6 +292,7 @@
           statusText,
           geneTip,
           phenoTip,
+          gvmapContainer,
 
           // Immediate div containing target svg
           divParent,
@@ -325,37 +314,65 @@
         chr.target(d3.select(element[0]).select('.chromosome'))
           .segment(scope.chr)
           .height(17)
-          .resolution(850)
+          .resolution(550)
           .useRelative(false)
           .showAxis(true)
           .render();
 
-        chr.on('bandclick', function(e) {
+        function updateRender() {
           scope.render();
           var s = chr.getSelections()[0];
           scope.updateSelectorMap([+s.start, +s.stop]);
+        }
+
+        chr.on('bandclick', function(d) {
+          updateRender();
+          scope.$emit('bandclick', d);
         });
 
-        chr.on('selectorend', function(){
+        chr.on('selectorend', function(d){
           scope.render();
+          scope.$emit('selectorend', d);
+        });
+
+        chr.on('selectordelete', function(d){
+          init();
+          gvmapContainer.remove();
+          gvinit = false;
+          scope.$emit('selectordelete', d);
         });
 
         scope.$on('geneview:render', function(e, a) {
           chr
             .segment(a.segment)
             .resolution(a.resolution)
+            .showAxis(a.showAxis)
+            .useRelative(a.relativeSize)
             .render();
           gvinit = false;
         });
 
-        function chrgvmap() {
-          //console.log('call')
+        chr.on("selectorchange", function(d) {
+          scope.updateSelectorMap(d);
+          scope.$emit('selectorchange', d);
+        });
 
+        scope.$on('geneview:updateselector', function(e, d) {
+          chr.moveSelectorTo(d.start, d.stop);
+          updateRender();
+        });
+
+        function getSensitivityValue(start, end) {
+          var defaultMax = 1000000;
+          var s = (end - start) * 0.10;
+          return s > defaultMax ? defaultMax : s;
+        }
+
+        function chrgvmap() {
           var chrTarget = chr.getSVGTarget();
-          //console.log(chrTarget)
-          var gvmapContainer = chrTarget.append('g')
+          gvmapContainer = chrTarget.append('g')
             .classed('geneview-map', true)
-            .attr('transform', 'translate(0,' + 57 + ")");
+            .attr('transform', 'translate(0,' + 60 + ")");
 
           var gvpoly = gvmapContainer.append('polygon');
 
@@ -369,7 +386,6 @@
             .range([0, +scope.width]);
 
           scope.updateSelectorMap = function (arg) {
-
             var selStart = arg[0];
             var selStop = arg[1];
             var sensitivity = Math.round(getSensitivityValue(selStart, selStop));
@@ -381,18 +397,16 @@
             //TODO calculate/ get actual values than hardcode
             var
               p1x = chrScale(selStop),
-            //p1x = 400,
               p1y = 0,
 
               p2x = chrScale(selStart) + 14,
-            //p2x = 300,
               p2y = 0,
 
               p3x = gvScale(selStart),
-              p3y = 18,
+              p3y = 19,
 
               p4x = gvScale(selStop),
-              p4y = 18;
+              p4y = 19;
 
             gvpoly.attr('points', p1x + "," + p1y + " " + p2x + "," + p2y + " " + p3x + "," + p3y + " " + p4x + "," + p4y)
               .style({
@@ -401,14 +415,18 @@
                 "stroke": "black",
                 "stroke-width" : 1
               });
-
-
           }
-
-          chr.on("selectorchange", scope.updateSelectorMap);
         }
 
         var gvinit = false;
+
+        function initgvmap () {
+          if(!gvinit) {
+            chrgvmap();
+            gvinit = true;
+          }
+        }
+
 
         var init = function () {
 
@@ -435,10 +453,7 @@
             .range([0, +scope.width])
             .domain([scope.boundFrom, scope.boundTo]);
 
-          if(!gvinit) {
-            chrgvmap();
-            gvinit = true;
-          }
+          initgvmap();
 
           divParent = d3.select(element[0]).select('.angular-geneview-vis')
             .style('height', scope.height + 'px')
@@ -462,15 +477,11 @@
           phenoTip = d3.tip()
             .attr('class', 'd3-tip')
             .direction('w')
-            .offset([-18,-30])
+            .offset([-15,-35])
             .html(function(d){
-              //console.log(d);
-              var phenotypes = d.phenotypes;
-              //phenotypes[i].phenotypeMap.phenotype
               var t = '';
-              phenotypes.forEach(function(v, i) {
+              d.phenotypes.forEach(function(v, i) {
                 t+= '<div>'+ (++i) +'. '+ v.phenotypeMap.phenotype + '</div>';
-
               });
 
               return t;
@@ -555,8 +566,8 @@
             statusBar.append('rect')
               .classed('geneview-statusbar', true)
               .attr('fill', '#ededed')
-              .attr('width', scope.width)
-              .attr('height', SD_1COL_HEIGHT);
+              .attr('width', scope.width - 2)
+              .attr('height', SD_1COL_HEIGHT - 2);
 
             statusText = statusBar.append('text')
               .attr('transform', 'translate(5,' + 14 + ")");
@@ -905,36 +916,42 @@
                   geneTip.show(geneData, domgene);
                 }
 
-                this.append('text')
+                var ptext = this.append('text')
                   .text(text)
                   .attr('transform', "translate(" + (xpos + 12) + "," + (margin.top + 15) + ")rotate(25)")
 
-                  .on('mouseover', function (d) {
-                    showDetails.call(this, d, i);
-                  })
-                  .on('mouseout', function () {
-                    hideDetails.call(this, i);
-                  })
-                  .on('click', function(d) {
-                    updateDetailInfo(d, i);
-                  }).on('contextmenu', function(d) {
+                  if (scope.detailWindow) {
+                    ptext.on('mouseover', function (d) {
+                      showDetails.call(this, d, i);
+                    })
+                      .on('mouseout', function () {
+                        hideDetails.call(this, i);
+                      })
+                      .on('click', function (d) {
+                        updateDetailInfo(d, i);
+                      }).on('contextmenu', function (d) {
 
-                    var menu = [];
-                    function makeItem(title, i) {
-                      return {
-                        title: title,
-                        action: function() { updateDetailInfo(d, i); }
-                      };
-                    }
+                        var menu = [];
 
-                    for(var j =0; j < data.phenotypes.length; j ++) {
-                      var p = data.phenotypes[j].phenotypeMap;
+                        function makeItem(title, i) {
+                          return {
+                            title: title,
+                            action: function () {
+                              updateDetailInfo(d, i);
+                            }
+                          };
+                        }
 
-                      menu.push(makeItem(p.phenotype, j));
-                    }
+                        for (var j = 0; j < data.phenotypes.length; j++) {
+                          var p = data.phenotypes[j].phenotypeMap;
 
-                    d3.contextMenu(menu)(d,i);
-                  });
+                          menu.push(makeItem(p.phenotype, j));
+                        }
+
+                        d3.contextMenu(menu)(d, i);
+                      });
+                  }
+
 
               }
 
