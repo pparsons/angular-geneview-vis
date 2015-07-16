@@ -1143,9 +1143,9 @@
                 config.geneClickAction(d);
               }
             })
-            .on('contextmenu', function() {
+            .on('contextmenu', function(d) {
               if (typeof config.geneContextMenu !== 'undefined') {
-                d3.contextMenu(config.geneContextMenu)();
+                d3.contextMenu(config.geneContextMenu)(d);
               }
             });
 
@@ -1184,9 +1184,9 @@
             .on('mouseout', function () {
               blackText.call(this);
             })
-            .on('contextmenu', function() {
+            .on('contextmenu', function(d) {
               if (typeof config.phenotypeContextMenu !== 'undefined') {
-                d3.contextMenu(config.phenotypeContextMenu)();
+                d3.contextMenu(config.phenotypeContextMenu)(d);
               }
             });
 
