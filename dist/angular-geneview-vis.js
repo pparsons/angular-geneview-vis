@@ -117,7 +117,7 @@
       // Return sanitized, wrapped data
       function process(data, boundFrom, boundTo) {
 
-        //reset cache from previous calls 
+        //reset cache from previous calls
         if(geneDB.length !== 0) { geneDB.length = 0; }
 
         var sanData = [];
@@ -230,7 +230,7 @@
 
       return {
         getArticleCount: function (genes, cb) {
-          return $http.get('//129.100.19.193' + '/soscip/api/genearticlestats.php?genes=' + genes)
+          return $http.get('//' + geneviewconfig.server + '/genearticlestats.php?genes=' + genes)
             .success(function (d) {
               cb(d);
             });
