@@ -116,21 +116,23 @@
               gene.on('mouseover', function (d) {
                 var ge = d3.select(this).select('circle');
                 articleTip.show(d);
-                ge.attr('fill', 'red');
+                //ge.attr('fill', 'red');
+                ge.transition().duration(100).attr('r', 8);
 
               });
 
               gene.on('mouseout', function (d) {
                 var ge = d3.select(this).select('circle');
                 articleTip.hide(d);
-                ge.attr('fill', function(d) {
-                  if (d.articleCount === 0) {
-                    return 'lightgray';
-                  }
-                  else {
-                    return 'orange';
-                  }
-                });
+                //ge.attr('fill', function(d) {
+                //  if (d.articleCount === 0) {
+                //    return 'lightgray';
+                //  }
+                //  else {
+                //    return 'orange';
+                //  }
+                //});
+                ge.transition().duration(100).attr('r', 3);
 
               });
             }
