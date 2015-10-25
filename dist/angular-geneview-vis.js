@@ -463,6 +463,44 @@
         };
 
         function drawBands(bands) {
+
+          function getStainColour (bandtype, density) {
+
+            if(bandtype === "gpos") {
+              if(density === "" || density === null) { return "#000000"; }
+
+              switch(density) {
+                case "100":
+                  return "#000000";
+                case "75":
+                  return "#666666";
+                case "50":
+                  return "#999999";
+                case "25":
+                  return "#d9d9d9";
+              }
+            }
+
+            if (bandtype === "gneg") {
+              return "#ffffff";
+            }
+
+            if (bandtype === "acen") {
+              //return "url(#acen-fill)";
+              return "#708090";
+            }
+
+            if (bandtype === "gvar") {
+              return "#e0e0e0";
+            }
+
+            if(bandtype === "stalk") {
+              return "#708090";
+            }
+
+            return "green";
+          };
+
           //  Average band label width
           var LABEL_WIDTH = 26;
 
@@ -486,7 +524,8 @@
               'stroke-width': '0.5'
             })
             .style('fill', function(d){
-              return cyto_chr.getStainColour(d.stain, d.density);
+
+              return getStainColour(d.stain, d.density);
             });
 
           band.append('text')
@@ -1432,21 +1471,23 @@
               gene.on('mouseover', function (d) {
                 var ge = d3.select(this).select('circle');
                 articleTip.show(d);
-                ge.attr('fill', 'red');
+                //ge.attr('fill', 'red');
+                ge.transition().duration(100).attr('r', 8);
 
               });
 
               gene.on('mouseout', function (d) {
                 var ge = d3.select(this).select('circle');
                 articleTip.hide(d);
-                ge.attr('fill', function(d) {
-                  if (d.articleCount === 0) {
-                    return 'lightgray';
-                  }
-                  else {
-                    return 'orange';
-                  }
-                });
+                //ge.attr('fill', function(d) {
+                //  if (d.articleCount === 0) {
+                //    return 'lightgray';
+                //  }
+                //  else {
+                //    return 'orange';
+                //  }
+                //});
+                ge.transition().duration(100).attr('r', 3);
 
               });
             }
